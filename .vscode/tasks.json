@@ -1,0 +1,9 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    { "label": "Phòng IoT mở hệ thống", "type": "process", "command": "node", "args": ["launcher.mjs"], "problemMatcher": [] },
+    { "label": "Phòng IoT kiểm thử", "type": "process", "command": "node", "args": ["--test", "tests/logic.test.mjs", "tests/system.test.mjs"], "problemMatcher": [] },
+    { "label": "ESP32 C5 biên dịch", "type": "process", "command": "node", "args": ["build-firmware.mjs"], "problemMatcher": [] },
+    { "label": "ESP32 C5 nạp COM16", "type": "process", "command": "node", "args": ["build-firmware.mjs", "--upload", "--port", "COM16"], "problemMatcher": [] }
+  ]
+}

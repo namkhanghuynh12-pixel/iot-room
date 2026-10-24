@@ -1,0 +1,7 @@
+{
+  "files.exclude": { "**/node_modules": true, "tools": true, "data": true, "logs": true },
+  "files.watcherExclude": { "**/node_modules/**": true, "**/tools/**": true, "**/data/**": true, "**/logs/**": true },
+  "search.exclude": { "**/node_modules": true, "tools": true, "data": true, "logs": true },
+  "editor.tabSize": 2,
+  "files.encoding": "utf8"
+}

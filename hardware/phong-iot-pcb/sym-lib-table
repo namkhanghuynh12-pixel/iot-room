@@ -1,0 +1,1 @@
+(sym_lib_table (version 7) (lib (name "RoomIoT") (type "KiCad") (uri "${KIPRJMOD}/RoomIoT.kicad_sym") (options "") (descr "Local schematic symbols")))

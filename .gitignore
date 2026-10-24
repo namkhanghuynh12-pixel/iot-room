@@ -1,0 +1,10 @@
+node_modules/
+data/
+tools/
+logs/
+firmware/config-secrets.h
+firmware/room_monitor/local_defaults.h
+
+*.zip
+backups/
+maintenance/

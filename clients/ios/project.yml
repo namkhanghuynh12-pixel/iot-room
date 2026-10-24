@@ -1,0 +1,23 @@
+name: PhongIoT
+options:
+  bundleIdPrefix: vn.phongiot
+targets:
+  PhongIoT:
+    type: application
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources: [PhongIoT]
+    info:
+      path: PhongIoT/Info.plist
+      properties:
+        CFBundleDisplayName: Phòng IoT
+        UILaunchScreen: {}
+        NSLocalNetworkUsageDescription: Kết nối máy chủ IoT trên laptop trong mạng nội bộ
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+          NSAllowsArbitraryLoads: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: vn.phongiot.app
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1,2"

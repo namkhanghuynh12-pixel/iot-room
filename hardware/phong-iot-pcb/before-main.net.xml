@@ -1,0 +1,1055 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="E">
+  <design>
+    <source>C:\Users\ADMIN\Documents\ChatGPT\IOT\iot-room\hardware\phong-iot-pcb\PhongIoT.kicad_sch</source>
+    <date>2026-10-25T03:35:58</date>
+    <tool>Eeschema 10.99.0-1488-g78ee5b0a84</tool>
+    <sheet number="1" name="/" tstamps="/">
+      <title_block>
+        <title>PHONG IoT - ESP32, sensors and 12 V / 1 A fan</title>
+        <company>PHONG IoT / ESP32-C5</company>
+        <rev>A - schematic review</rev>
+        <date>2026-10-25</date>
+        <source>PhongIoT.kicad_sch</source>
+        <comment number="1" value="Logical pin labels; verify actual DevKit revision before wiring"/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+  </design>
+  <components>
+    <comp ref="A1">
+      <value>ESP32-C5 N16R8 (logical pins)</value>
+      <fields>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="RoomIoT" part="A1" description=""/>
+      <property name="Sheetname" value="Root"/>
+      <property name="Sheetfile" value="PhongIoT.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>c6a7bd4b-fc88-4901-8ed8-3e9342fe239b</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="3V3"/>
+            <pin num="5V"/>
+            <pin num="GND"/>
+            <pin num="IO7"/>
+            <pin num="IO1"/>
+            <pin num="IO3"/>
+            <pin num="IO10"/>
+            <pin num="IO4"/>
+            <pin num="IO5"/>
+            <pin num="IO6"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="BZ1">
+      <value>ACTIVE BUZZER 5V / &lt;=100mA</value>
+      <fields>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="RoomIoT" part="BZ1" description=""/>
+      <property name="Sheetname" value="Root"/>
+      <property name="Sheetfile" value="PhongIoT.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>21cf372d-240a-4a2f-9391-556ddb566e5e</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C1">
+      <value>100n / 10V</value>
+      <fields>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="RoomIoT" part="C1" description=""/>
+      <property name="Sheetname" value="Root"/>
+      <property name="Sheetfile" value="PhongIoT.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>5fe56e7d-39ab-4ad4-a755-ed893c0503de</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="C2">
+      <value>100n</value>
+      <fields>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="RoomIoT" part="C2" description=""/>
+      <property name="Sheetname" value="Root"/>
+      <property name="Sheetfile" value="PhongIoT.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>64839f9e-1cbf-403d-aba3-658cdacc0ab1</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="D1">
+      <value>1N5822 / 3A 40V</value>
+      <fields>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="RoomIoT" part="D1" description=""/>
+      <property name="Sheetname" value="Root"/>
+      <property name="Sheetfile" value="PhongIoT.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>801def80-1a35-420e-a1b0-ec194df1ec22</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="D2">
+      <value>1N5819 / flyback</value>
+      <fields>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="RoomIoT" part="D2" description=""/>
+      <property name="Sheetname" value="Root"/>
+      <property name="Sheetfile" value="PhongIoT.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>414c6e99-490b-4703-8f83-ce1efcaa84ff</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="D3">
+      <value>WHITE LED</value>
+      <fields>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="RoomIoT" part="D3" description=""/>
+      <property name="Sheetname" value="Root"/>
+      <property name="Sheetfile" value="PhongIoT.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>4b0f0b0e-7554-4eb6-a3a4-dc97cdb0a76c</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="J2">
+      <value>PIR HC-SR501 cable</value>
+      <fields>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="RoomIoT" part="J2" description=""/>
+      <property name="Sheetname" value="Root"/>
+      <property name="Sheetfile" value="PhongIoT.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>2953366c-cf9c-41e7-8bef-8a2fb8cd39b1</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+            <pin num="3"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="J3">
+      <value>MQ135 module cable</value>
+      <fields>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="RoomIoT" part="J3" description=""/>
+      <property name="Sheetname" value="Root"/>
+      <property name="Sheetfile" value="PhongIoT.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>71fbdc31-0439-411f-8c5d-a46d9a70e1bf</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+            <pin num="3"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="J4">
+      <value>FAN HEADER &gt;= 3A</value>
+      <fields>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="RoomIoT" part="J4" description=""/>
+      <property name="Sheetname" value="Root"/>
+      <property name="Sheetfile" value="PhongIoT.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>974bea39-21c5-4222-b85b-42923c508a27</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="JP1">
+      <value>OPEN for USB; CLOSE for external power</value>
+      <fields>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="RoomIoT" part="JP1" description=""/>
+      <property name="Sheetname" value="Root"/>
+      <property name="Sheetfile" value="PhongIoT.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>d500492e-dec3-47b1-998f-c0d21eaa3213</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="Q1">
+      <value>AO3400A / N-MOSFET</value>
+      <fields>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="RoomIoT" part="Q1" description=""/>
+      <property name="Sheetname" value="Root"/>
+      <property name="Sheetfile" value="PhongIoT.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>dc2742fc-c3e6-4c7e-8dac-f07fd7a0a395</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="3"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="Q2">
+      <value>AO3400A / N-MOSFET</value>
+      <fields>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="RoomIoT" part="Q2" description=""/>
+      <property name="Sheetname" value="Root"/>
+      <property name="Sheetfile" value="PhongIoT.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>2e8323b8-0977-4fcd-b2d7-8b8c9cd20f2c</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="3"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R1">
+      <value>10k</value>
+      <fields>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="RoomIoT" part="R1" description=""/>
+      <property name="Sheetname" value="Root"/>
+      <property name="Sheetfile" value="PhongIoT.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>c43bf520-2353-4fc5-a12e-abf766964f4c</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R2">
+      <value>20k / 1%</value>
+      <fields>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="RoomIoT" part="R2" description=""/>
+      <property name="Sheetname" value="Root"/>
+      <property name="Sheetfile" value="PhongIoT.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>b1577149-19ce-40d4-9757-079d07d40926</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R3">
+      <value>10k / 1%</value>
+      <fields>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="RoomIoT" part="R3" description=""/>
+      <property name="Sheetname" value="Root"/>
+      <property name="Sheetfile" value="PhongIoT.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>2cf0b553-3dea-4c1a-a5e6-8ebd08f43f37</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R4">
+      <value>LDR</value>
+      <fields>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="RoomIoT" part="R4" description=""/>
+      <property name="Sheetname" value="Root"/>
+      <property name="Sheetfile" value="PhongIoT.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>23e7fab3-6c78-486e-8877-c03a79dbb0dc</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R5">
+      <value>10k</value>
+      <fields>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="RoomIoT" part="R5" description=""/>
+      <property name="Sheetname" value="Root"/>
+      <property name="Sheetfile" value="PhongIoT.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>da4d4612-595c-4149-a4e0-b1641c6ab48c</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R6">
+      <value>1k</value>
+      <fields>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="RoomIoT" part="R6" description=""/>
+      <property name="Sheetname" value="Root"/>
+      <property name="Sheetfile" value="PhongIoT.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>9f3c5697-254c-4595-94c2-c1584d80a8d3</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R7">
+      <value>100k</value>
+      <fields>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="RoomIoT" part="R7" description=""/>
+      <property name="Sheetname" value="Root"/>
+      <property name="Sheetfile" value="PhongIoT.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>dfd13db5-9eae-465d-b982-e932400cca35</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R8">
+      <value>100R</value>
+      <fields>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="RoomIoT" part="R8" description=""/>
+      <property name="Sheetname" value="Root"/>
+      <property name="Sheetfile" value="PhongIoT.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>e9601ce1-e9bc-4fd6-9bf6-247628928359</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R9">
+      <value>100k</value>
+      <fields>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="RoomIoT" part="R9" description=""/>
+      <property name="Sheetname" value="Root"/>
+      <property name="Sheetfile" value="PhongIoT.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>41ae97a1-9c32-41d1-85c4-e4bcf261f547</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R10">
+      <value>100R</value>
+      <fields>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="RoomIoT" part="R10" description=""/>
+      <property name="Sheetname" value="Root"/>
+      <property name="Sheetfile" value="PhongIoT.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>38f05ec1-f387-44dc-b0ad-cb04eba84e58</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R11">
+      <value>100k</value>
+      <fields>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="RoomIoT" part="R11" description=""/>
+      <property name="Sheetname" value="Root"/>
+      <property name="Sheetfile" value="PhongIoT.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>61d6f31c-91f7-4f75-98cf-0e3b60fe67c9</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="R12">
+      <value>1k</value>
+      <fields>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="RoomIoT" part="R12" description=""/>
+      <property name="Sheetname" value="Root"/>
+      <property name="Sheetfile" value="PhongIoT.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>7f82feaa-d270-4e8e-999e-a8298c9eacee</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+    <comp ref="U2">
+      <value>DHT22 / AM2302 bare sensor</value>
+      <fields>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <libsource lib="RoomIoT" part="U2" description=""/>
+      <property name="Sheetname" value="Root"/>
+      <property name="Sheetfile" value="PhongIoT.kicad_sch"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>e635880a-230e-4bdb-948a-a3fc24a10058</tstamps>
+      <units>
+        <unit name="A">
+          <pins>
+            <pin num="1"/>
+            <pin num="2"/>
+            <pin num="3"/>
+            <pin num="4"/>
+          </pins>
+        </unit>
+      </units>
+    </comp>
+  </components>
+  <libparts>
+    <libpart lib="RoomIoT" part="A1">
+      <fields>
+        <field name="Reference">A1</field>
+        <field name="Value">ESP32-C5 N16R8 (logical pins)</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <pins>
+        <pin num="3V3" name="3V3_OUT" type="passive"/>
+        <pin num="5V" name="5V_IN" type="passive"/>
+        <pin num="GND" name="GND" type="passive"/>
+        <pin num="IO1" name="GPIO1_/_ADC" type="passive"/>
+        <pin num="IO3" name="GPIO3_/_ADC" type="passive"/>
+        <pin num="IO4" name="GPIO4_/_FAN" type="passive"/>
+        <pin num="IO5" name="GPIO5_/_BUZZER" type="passive"/>
+        <pin num="IO6" name="GPIO6_/_LED" type="passive"/>
+        <pin num="IO7" name="GPIO7_/_DHT" type="passive"/>
+        <pin num="IO10" name="GPIO10_/_PIR" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="RoomIoT" part="BZ1">
+      <fields>
+        <field name="Reference">BZ1</field>
+        <field name="Value">ACTIVE BUZZER 5V / &lt;=100mA</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <pins>
+        <pin num="1" name="PLUS" type="passive"/>
+        <pin num="2" name="MINUS" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="RoomIoT" part="C1">
+      <fields>
+        <field name="Reference">C1</field>
+        <field name="Value">100n / 10V</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="RoomIoT" part="C2">
+      <fields>
+        <field name="Reference">C2</field>
+        <field name="Value">100n</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="RoomIoT" part="D1">
+      <fields>
+        <field name="Reference">D1</field>
+        <field name="Value">1N5822 / 3A 40V</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="RoomIoT" part="D2">
+      <fields>
+        <field name="Reference">D2</field>
+        <field name="Value">1N5819 / flyback</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="RoomIoT" part="D3">
+      <fields>
+        <field name="Reference">D3</field>
+        <field name="Value">WHITE LED</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="RoomIoT" part="J2">
+      <fields>
+        <field name="Reference">J2</field>
+        <field name="Value">PIR HC-SR501 cable</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <pins>
+        <pin num="1" name="VCC" type="passive"/>
+        <pin num="2" name="OUT" type="passive"/>
+        <pin num="3" name="GND" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="RoomIoT" part="J3">
+      <fields>
+        <field name="Reference">J3</field>
+        <field name="Value">MQ135 module cable</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <pins>
+        <pin num="1" name="VCC" type="passive"/>
+        <pin num="2" name="AO" type="passive"/>
+        <pin num="3" name="GND" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="RoomIoT" part="J4">
+      <fields>
+        <field name="Reference">J4</field>
+        <field name="Value">FAN HEADER &gt;= 3A</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <pins>
+        <pin num="1" name="FAN_+12V" type="passive"/>
+        <pin num="2" name="FAN_-" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="RoomIoT" part="JP1">
+      <fields>
+        <field name="Reference">JP1</field>
+        <field name="Value">OPEN for USB; CLOSE for external power</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="RoomIoT" part="Q1">
+      <fields>
+        <field name="Reference">Q1</field>
+        <field name="Value">AO3400A / N-MOSFET</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <pins>
+        <pin num="1" name="GATE" type="passive"/>
+        <pin num="2" name="SOURCE" type="passive"/>
+        <pin num="3" name="DRAIN" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="RoomIoT" part="Q2">
+      <fields>
+        <field name="Reference">Q2</field>
+        <field name="Value">AO3400A / N-MOSFET</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <pins>
+        <pin num="1" name="GATE" type="passive"/>
+        <pin num="2" name="SOURCE" type="passive"/>
+        <pin num="3" name="DRAIN" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="RoomIoT" part="R1">
+      <fields>
+        <field name="Reference">R1</field>
+        <field name="Value">10k</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="RoomIoT" part="R10">
+      <fields>
+        <field name="Reference">R10</field>
+        <field name="Value">100R</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="RoomIoT" part="R11">
+      <fields>
+        <field name="Reference">R11</field>
+        <field name="Value">100k</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="RoomIoT" part="R12">
+      <fields>
+        <field name="Reference">R12</field>
+        <field name="Value">1k</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="RoomIoT" part="R2">
+      <fields>
+        <field name="Reference">R2</field>
+        <field name="Value">20k / 1%</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="RoomIoT" part="R3">
+      <fields>
+        <field name="Reference">R3</field>
+        <field name="Value">10k / 1%</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="RoomIoT" part="R4">
+      <fields>
+        <field name="Reference">R4</field>
+        <field name="Value">LDR</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="RoomIoT" part="R5">
+      <fields>
+        <field name="Reference">R5</field>
+        <field name="Value">10k</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="RoomIoT" part="R6">
+      <fields>
+        <field name="Reference">R6</field>
+        <field name="Value">1k</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="RoomIoT" part="R7">
+      <fields>
+        <field name="Reference">R7</field>
+        <field name="Value">100k</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="RoomIoT" part="R8">
+      <fields>
+        <field name="Reference">R8</field>
+        <field name="Value">100R</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="RoomIoT" part="R9">
+      <fields>
+        <field name="Reference">R9</field>
+        <field name="Value">100k</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="RoomIoT" part="U2">
+      <fields>
+        <field name="Reference">U2</field>
+        <field name="Value">DHT22 / AM2302 bare sensor</field>
+        <field name="Footprint"/>
+        <field name="Datasheet"/>
+        <field name="Description"/>
+      </fields>
+      <pins>
+        <pin num="1" name="VDD" type="passive"/>
+        <pin num="2" name="DATA" type="passive"/>
+        <pin num="3" name="NC" type="passive"/>
+        <pin num="4" name="GND" type="passive"/>
+      </pins>
+    </libpart>
+  </libparts>
+  <libraries>
+    <library logical="RoomIoT">
+      <uri>${KIPRJMOD}/RoomIoT.kicad_sym</uri>
+    </library>
+  </libraries>
+  <nets>
+    <net code="1" name="/+3V3" class="Default">
+      <node ref="A1" pin="3V3" pinfunction="3V3_OUT_3V3" pintype="passive"/>
+      <node ref="C1" pin="1" pintype="passive"/>
+      <node ref="R1" pin="1" pintype="passive"/>
+      <node ref="R4" pin="1" pintype="passive"/>
+      <node ref="U2" pin="1" pinfunction="VDD_1" pintype="passive"/>
+    </net>
+    <net code="2" name="/+5V" class="Default">
+      <node ref="BZ1" pin="1" pinfunction="PLUS_1" pintype="passive"/>
+      <node ref="D2" pin="1" pintype="passive"/>
+      <node ref="J2" pin="1" pinfunction="VCC_1" pintype="passive"/>
+      <node ref="J3" pin="1" pinfunction="VCC_1" pintype="passive"/>
+      <node ref="JP1" pin="1" pintype="passive"/>
+    </net>
+    <net code="3" name="/+12V_REG" class="Default">
+      <node ref="D1" pin="1" pintype="passive"/>
+      <node ref="J4" pin="1" pinfunction="FAN_+12V_1" pintype="passive"/>
+    </net>
+    <net code="4" name="/BUZ_GATE" class="Default">
+      <node ref="Q2" pin="1" pinfunction="GATE_1" pintype="passive"/>
+      <node ref="R10" pin="2" pintype="passive"/>
+      <node ref="R11" pin="1" pintype="passive"/>
+    </net>
+    <net code="5" name="/BUZ_GPIO" class="Default">
+      <node ref="A1" pin="IO5" pinfunction="GPIO5_/_BUZZER_IO5" pintype="passive"/>
+      <node ref="R10" pin="1" pintype="passive"/>
+    </net>
+    <net code="6" name="/BUZ_MINUS" class="Default">
+      <node ref="BZ1" pin="2" pinfunction="MINUS_2" pintype="passive"/>
+      <node ref="D2" pin="2" pintype="passive"/>
+      <node ref="Q2" pin="3" pinfunction="DRAIN_3" pintype="passive"/>
+    </net>
+    <net code="7" name="/DHT_DATA" class="Default">
+      <node ref="A1" pin="IO7" pinfunction="GPIO7_/_DHT_IO7" pintype="passive"/>
+      <node ref="R1" pin="2" pintype="passive"/>
+      <node ref="U2" pin="2" pinfunction="DATA_2" pintype="passive"/>
+    </net>
+    <net code="8" name="/ESP_5V" class="Default">
+      <node ref="A1" pin="5V" pinfunction="5V_IN_5V" pintype="passive"/>
+      <node ref="JP1" pin="2" pintype="passive"/>
+    </net>
+    <net code="9" name="/FAN_GATE" class="Default">
+      <node ref="Q1" pin="1" pinfunction="GATE_1" pintype="passive"/>
+      <node ref="R8" pin="2" pintype="passive"/>
+      <node ref="R9" pin="1" pintype="passive"/>
+    </net>
+    <net code="10" name="/FAN_GPIO" class="Default">
+      <node ref="A1" pin="IO4" pinfunction="GPIO4_/_FAN_IO4" pintype="passive"/>
+      <node ref="R8" pin="1" pintype="passive"/>
+    </net>
+    <net code="11" name="/FAN_MINUS" class="Default">
+      <node ref="D1" pin="2" pintype="passive"/>
+      <node ref="J4" pin="2" pinfunction="FAN_-_2" pintype="passive"/>
+      <node ref="Q1" pin="3" pinfunction="DRAIN_3" pintype="passive"/>
+    </net>
+    <net code="12" name="/GND" class="Default">
+      <node ref="A1" pin="GND" pinfunction="GND_GND" pintype="passive"/>
+      <node ref="C1" pin="2" pintype="passive"/>
+      <node ref="C2" pin="2" pintype="passive"/>
+      <node ref="D3" pin="1" pintype="passive"/>
+      <node ref="J2" pin="3" pinfunction="GND_3" pintype="passive"/>
+      <node ref="J3" pin="3" pinfunction="GND_3" pintype="passive"/>
+      <node ref="Q1" pin="2" pinfunction="SOURCE_2" pintype="passive"/>
+      <node ref="Q2" pin="2" pinfunction="SOURCE_2" pintype="passive"/>
+      <node ref="R11" pin="2" pintype="passive"/>
+      <node ref="R3" pin="2" pintype="passive"/>
+      <node ref="R5" pin="2" pintype="passive"/>
+      <node ref="R7" pin="2" pintype="passive"/>
+      <node ref="R9" pin="2" pintype="passive"/>
+      <node ref="U2" pin="4" pinfunction="GND_4" pintype="passive"/>
+    </net>
+    <net code="13" name="/LDR_ADC" class="Default">
+      <node ref="A1" pin="IO3" pinfunction="GPIO3_/_ADC_IO3" pintype="passive"/>
+      <node ref="R4" pin="2" pintype="passive"/>
+      <node ref="R5" pin="1" pintype="passive"/>
+    </net>
+    <net code="14" name="/LED_A" class="Default">
+      <node ref="D3" pin="2" pintype="passive"/>
+      <node ref="R12" pin="2" pintype="passive"/>
+    </net>
+    <net code="15" name="/LED_GPIO" class="Default">
+      <node ref="A1" pin="IO6" pinfunction="GPIO6_/_LED_IO6" pintype="passive"/>
+      <node ref="R12" pin="1" pintype="passive"/>
+    </net>
+    <net code="16" name="/MQ_ADC" class="Default">
+      <node ref="A1" pin="IO1" pinfunction="GPIO1_/_ADC_IO1" pintype="passive"/>
+      <node ref="C2" pin="1" pintype="passive"/>
+      <node ref="R2" pin="2" pintype="passive"/>
+      <node ref="R3" pin="1" pintype="passive"/>
+    </net>
+    <net code="17" name="/MQ_RAW" class="Default">
+      <node ref="J3" pin="2" pinfunction="AO_2" pintype="passive"/>
+      <node ref="R2" pin="1" pintype="passive"/>
+    </net>
+    <net code="18" name="/PIR_GPIO" class="Default">
+      <node ref="A1" pin="IO10" pinfunction="GPIO10_/_PIR_IO10" pintype="passive"/>
+      <node ref="R6" pin="2" pintype="passive"/>
+      <node ref="R7" pin="1" pintype="passive"/>
+    </net>
+    <net code="19" name="/PIR_OUT" class="Default">
+      <node ref="J2" pin="2" pinfunction="OUT_2" pintype="passive"/>
+      <node ref="R6" pin="1" pintype="passive"/>
+    </net>
+    <net code="20" name="unconnected-(U2-NC-Pad3)" class="Default">
+      <node ref="U2" pin="3" pinfunction="NC_3" pintype="passive+no_connect"/>
+    </net>
+  </nets>
+</export>
