@@ -31,16 +31,21 @@ test('anime text colors meet AA against the worst video behind translucent cards
   const blocks = [...css.matchAll(/:root(?:\[data-theme="light"\])?\s*\{([^}]+)\}/g)];
   const rgb = hex => hex.match(/[a-f\d]{2}/gi).map(x=>parseInt(x,16));
   const luminance = c => c.map(v=>v/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((sum,v,i)=>sum+v*[.2126,.7152,.0722][i],0);
-  for (const [index,block] of blocks.entries()) {
-    const tokens = Object.fromEntries([...block[1].matchAll(/(--[\w-]+):\s*([^;]+);/g)].map(m=>[m[1],m[2].trim()]));
+  for (const index of [0,1]) {
+    const properties=block=>Object.fromEntries([...block[1].matchAll(/(--[\w-]+):\s*([^;]+);/g)].map(m=>[m[1],m[2].trim()]));
+    const base=Object.assign({},...blocks.filter(b=>!b[0].startsWith(':root[')).map(properties));
+    const tokens=index===0?base:Object.assign({},base,...blocks.filter(b=>b[0].startsWith(':root[')).map(properties));
     const [r,g,b,a] = tokens['--gx-glass-bg'].match(/[\d.]+/g).map(Number);
-    const bg = [r,g,b].map(v=>v*a+(index===0?255:0)*(1-a));
+    // Composite the lightest top of the veil over worst-case video, then the card.
+    const veil=rgb(tokens['--anime-veil'].match(/#[a-f\d]{8}/i)[0]);
+    const under=veil.slice(0,3).map(v=>v*(veil[3]/255)+(index===0?255:0)*(1-veil[3]/255));
+    const bg = [r,g,b].map((v,i)=>v*a+under[i]*(1-a));
     for (const key of ['--gx-text-primary','--gx-text-secondary','--gx-text-muted','--gx-accent-glow','--gx-status-danger','--gx-status-warn','--gx-status-ok']) {
       const l1 = luminance(rgb(tokens[key])), l2 = luminance(bg);
       assert.ok((Math.max(l1,l2)+.05)/(Math.min(l1,l2)+.05)>=4.5,`${key}: theme ${index} does not meet 4.5:1`);
     }
   }
-  assert.equal(blocks.length,2);
+  assert.ok(blocks.length>=2);
 });
 
 test('offline cache serves ranged media without caching or replaying API calls', async () => {

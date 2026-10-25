@@ -165,12 +165,12 @@ const server = http.createServer(async (req,res) => {
       const result = (settings.hardwareId.endsWith('02')?secondSimulator:simulator).configure(await body(req)); broadcast(); return json(res,result);
     }
     if (req.method !== 'GET') return json(res,{error:'Không tìm thấy'},404);
-    const files = { '/':'index.html', '/app.js':'app.js', '/style.css':'style.css', '/manifest.webmanifest':'manifest.webmanifest', '/sw.js':'sw.js', '/icon.svg':'icon.svg', '/ui-state.js':'ui-state.js', '/bg.mp4':'bg.mp4', '/poster.jpg':'poster.jpg' };
+    const files = { '/':'index.html', '/app.js':'app.js', '/style.css':'style.css', '/manifest.webmanifest':'manifest.webmanifest', '/sw.js':'sw.js', '/icon.svg':'icon.svg', '/ui-state.js':'ui-state.js', '/bg.mp4':'bg.mp4', '/bg-2k.mp4':'bg-2k.mp4', '/bg-720.mp4':'bg-720.mp4', '/poster.jpg':'poster.jpg' };
     const file = files[url.pathname]; if (!file) return json(res,{error:'Không tìm thấy'},404);
     const assetPath = path.join(root, 'public', file);
     const size = fs.statSync(assetPath).size;
     const headers = { 'Content-Type':mime[path.extname(file)], 'Cache-Control':'no-cache' };
-    if (file === 'bg.mp4') {
+    if (file.endsWith('.mp4')) {
       headers['Accept-Ranges'] = 'bytes';
       const range = req.headers.range;
       if (range) {

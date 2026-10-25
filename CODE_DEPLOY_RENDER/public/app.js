@@ -155,10 +155,11 @@ import { matchesCommandAck, arcPath, shouldReduceVideo } from './ui-state.js';
   function syncBackgroundVideo() {
     const video = $('room-background');
     if (!video) return;
-    const allowed = !document.hidden && appState.fxMode === 'full' && !reducedMotion.matches;
+    const allowed = !document.hidden && appState.fxMode === 'full' && !reducedMotion.matches && !navigator.connection?.saveData;
     const attempt = ++videoPlayAttempt;
     videoQualityBaseline = null;
     if (!allowed) { video.pause(); return; }
+    if(video.readyState<3){video.addEventListener('canplay',syncBackgroundVideo,{once:true});return;}
     video.muted = true;
     video.play().then(() => {
       if (attempt !== videoPlayAttempt || document.hidden || appState.fxMode !== 'full' || reducedMotion.matches) video.pause();
@@ -175,10 +176,11 @@ import { matchesCommandAck, arcPath, shouldReduceVideo } from './ui-state.js';
     if (!video || video.paused || !video.getVideoPlaybackQuality || !videoQualityBaseline) return;
     const current = video.getVideoPlaybackQuality();
     if (shouldReduceVideo(videoQualityBaseline, current)) {
+      if(!video.dataset.lightSource){video.dataset.lightSource='1';video.src='/bg-720.mp4';video.load();video.addEventListener('canplay',syncBackgroundVideo,{once:true});return;}
       setFxMode('reduced');
       toast('Đã giảm hiệu ứng vì video rơi hơn 30% khung hình.');
     } else if (current.totalVideoFrames - videoQualityBaseline.totalVideoFrames >= 60) videoQualityBaseline = current;
-  }, 5000);
+  }, 4000);
 
   function setFxMode(mode) {
     if (!['full', 'reduced', 'off'].includes(mode)) mode = 'full';
@@ -250,40 +252,24 @@ import { matchesCommandAck, arcPath, shouldReduceVideo } from './ui-state.js';
     zones('temp', [0, settings.offTemperature, settings.onTemperature, 60], 60, ['ok','warn','danger']);
     zones('hum', [0, settings.humidityAlert, 100], 100, ['ok','danger']);
     zones('light', [0, settings.lightOn, settings.lightOff, 100], 100, ['danger','warn','ok']);
+    for(const [key,bounds,max] of [['temp',[settings.offTemperature,settings.onTemperature],60],['hum',[settings.humidityAlert],100],['gas',[settings.airQualityOff,settings.airQualityOn],100],['light',[settings.lightOn,settings.lightOff],100]]){
+      const svg=$(`svg-gauge-${key}`);if(!svg)continue;
+      svg.querySelectorAll('.ink-threshold').forEach(n=>n.remove());
+      bounds.forEach(v=>{const a=Math.PI*(1-v/max),dot=document.createElementNS('http://www.w3.org/2000/svg','circle');dot.setAttribute('class','ink-threshold');dot.setAttribute('cx',100+75*Math.cos(a));dot.setAttribute('cy',95-75*Math.sin(a));dot.setAttribute('r','2.5');svg.append(dot);});
+    }
     $('gauge-temp-threshold').textContent = `Bật ≥${settings.onTemperature} / Tắt ≤${settings.offTemperature}`;
     $('gauge-hum-threshold').textContent = `Cảnh báo ≥${settings.humidityAlert}%`;
     $('gauge-light-threshold').textContent = `Bật ≤${settings.lightOn} / Tắt ≥${settings.lightOff}`;
   }
 
-  function updateSvgGauge(gaugeKey, value, min, max) {
-    const needle = $(`needle-${gaugeKey}`);
-    const prog = $(`prog-${gaugeKey}`);
-    if (!needle || !prog) return;
-
-    if (value == null || isNaN(value)) {
-
-      needle.setAttribute('transform', 'rotate(0 100 95)');
-      prog.setAttribute('d', 'M 25 95 A 75 75 0 0 1 25 95');
-      return;
-    }
-
-    const ratio = clamp((value - min) / (max - min), 0, 1);
-
-    // Tính góc kim: từ 0 độ (trái) tới 180 độ (phải)
-    // Đường thẳng ban đầu x1=100, y1=95, x2=35, y2=95 chỉ sang trái (0 độ)
-    const angleDeg = ratio * 180;
-
-    needle.setAttribute('transform', `rotate(${angleDeg.toFixed(2)} 100 95)`);
-
-    // Tính tọa độ điểm mút của cung tiến độ (Arc Progress Path)
-    // ratio = 0: x = 25, y = 95
-    // ratio = 1: x = 175, y = 95
-    const angleRad = Math.PI * (1 - ratio);
-    const endX = 100 + 75 * Math.cos(angleRad);
-    const endY = 95 - 75 * Math.sin(angleRad);
-
-    const d = `M 25 95 A 75 75 0 0 1 ${endX.toFixed(2)} ${endY.toFixed(2)}`;
-    prog.setAttribute('d', d);
+  function updateSvgGauge(gaugeKey,value,min,max){
+    const svg=$(`svg-gauge-${gaugeKey}`);if(!svg)return;
+    const valid=typeof value==='number'&&Number.isFinite(value);
+    svg.classList.toggle('ink-empty',!valid||value<=min);
+    const ratio=valid?clamp((value-min)/(max-min),0,1):0;
+    svg.querySelectorAll('.ink-bleed,.ink-body,.ink-dry').forEach(p=>p.style.strokeDasharray=`${ratio*100} 100`);
+    const tip=$(`needle-${gaugeKey}`);tip?.setAttribute('transform',`rotate(${ratio*180} 100 95)`);
+    if(tip)tip.classList.toggle('hidden',!valid);
   }
 
   // Hiệu ứng số đếm mượt (Number Count Lerp) 350ms
@@ -292,7 +278,7 @@ import { matchesCommandAck, arcPath, shouldReduceVideo } from './ui-state.js';
     if (!el) return;
 
     if (targetValue == null || isNaN(targetValue)) {
-      el.textContent = '--';
+      el.textContent = '—';
       appState.displayedValues[key] = 0;
       return;
     }
@@ -332,7 +318,7 @@ import { matchesCommandAck, arcPath, shouldReduceVideo } from './ui-state.js';
 
     const prev = appState.prevValues[key];
     if (prev == null || currentVal == null) {
-      trendEl.textContent = '→ Ổn định';
+      trendEl.textContent = currentVal == null ? 'Chưa có dữ liệu' : 'Đã nhận dữ liệu';
       trendEl.className = 'kpi-trend';
       return;
     }
@@ -824,6 +810,7 @@ import { matchesCommandAck, arcPath, shouldReduceVideo } from './ui-state.js';
 
     // 6.1 Nhiệt độ (0 - 60 °C, bật >=30, tắt <=28)
     updateGaugeZones(snap.settings);
+
     const dataLabel = $('hero-data-label');
     if (dataLabel) dataLabel.textContent = snap.settings.source === 'simulation' || d.synthetic ? 'Dữ liệu mô phỏng' : 'Dữ liệu từ ESP32';
     const curTemp = d.temperature;
@@ -1634,6 +1621,7 @@ import { matchesCommandAck, arcPath, shouldReduceVideo } from './ui-state.js';
   // --------------------------------------------------------------------------
   function init() {
     // Khởi tạo Theme & FX từ localStorage
+    const bg=$('room-background'); if(navigator.connection?.saveData){bg?.removeAttribute('src');bg?.querySelectorAll('source').forEach(s=>s.removeAttribute('src'));bg?.load();bg?.classList.add('video-failed');} bg?.addEventListener('error',()=>bg.classList.add('video-failed'));
     setTheme(appState.theme);
     setFxMode(appState.fxMode);
 
@@ -1654,6 +1642,7 @@ import { matchesCommandAck, arcPath, shouldReduceVideo } from './ui-state.js';
     connectEventSource();
     loadSetupDefaults();
 
+
     // Hỗ trợ mở trực tiếp tab qua URL hash (ví dụ: #devices, #rules, #history)
     const initialHash = window.location.hash.replace('#', '');
     if (['dashboard', 'devices', 'rules', 'history'].includes(initialHash)) {
@@ -1670,7 +1659,7 @@ import { matchesCommandAck, arcPath, shouldReduceVideo } from './ui-state.js';
     setInterval(() => {
       const clockEl = $('console-clock');
       if (clockEl && !appState.snapshot?.device?.at) {
-        clockEl.textContent = formatLocalTime(new Date().toISOString());
+        clockEl.textContent = formatLocalTime(null);
       }
     }, 1000);
   }

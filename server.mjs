@@ -15,7 +15,7 @@ import { FirmwareManager } from './firmware-manager.mjs';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const dataDir = process.env.IOT_DATA_DIR || path.join(root, 'data'); fs.mkdirSync(dataDir, { recursive: true });
-const port = Number(process.env.PORT || process.env.IOT_HTTP_PORT || 8765), mqttPort = Number(process.env.IOT_MQTT_PORT || 1883);
+const port = Number(process.env.PORT || process.env.IOT_HTTP_PORT || 3500), mqttPort = Number(process.env.IOT_MQTT_PORT || 1883);
 const secretFile = path.join(dataDir, 'credentials.json');
 if (!fs.existsSync(secretFile)) fs.writeFileSync(secretFile, JSON.stringify({ hardware: randomBytes(18).toString('hex'), simulation: randomBytes(18).toString('hex'), accessToken:randomBytes(24).toString('hex') }, null, 2), { mode: 0o600 });
 const secrets = JSON.parse(fs.readFileSync(secretFile));
@@ -184,12 +184,12 @@ const server = http.createServer(async (req,res) => {
       const result = (settings.hardwareId.endsWith('02')?secondSimulator:simulator).configure(await body(req)); broadcast(); return json(res,result);
     }
     if (req.method !== 'GET') return json(res,{error:'Không tìm thấy'},404);
-    const files = { '/':'index.html', '/app.js':'app.js', '/style.css':'style.css', '/manifest.webmanifest':'manifest.webmanifest', '/sw.js':'sw.js', '/icon.svg':'icon.svg', '/ui-state.js':'ui-state.js', '/bg.mp4':'bg.mp4', '/poster.jpg':'poster.jpg' };
+    const files = { '/':'index.html', '/app.js':'app.js', '/style.css':'style.css', '/manifest.webmanifest':'manifest.webmanifest', '/sw.js':'sw.js', '/icon.svg':'icon.svg', '/ui-state.js':'ui-state.js', '/bg.mp4':'bg.mp4', '/bg-2k.mp4':'bg-2k.mp4', '/bg-720.mp4':'bg-720.mp4', '/poster.jpg':'poster.jpg' };
     const file = files[url.pathname]; if (!file) return json(res,{error:'Không tìm thấy'},404);
     const assetPath = path.join(root, 'public', file);
     const size = fs.statSync(assetPath).size;
     const headers = { 'Content-Type':mime[path.extname(file)], 'Cache-Control':'no-cache' };
-    if (file === 'bg.mp4') {
+    if (file.endsWith('.mp4')) {
       headers['Accept-Ranges'] = 'bytes';
       const range = req.headers.range;
       if (range) {

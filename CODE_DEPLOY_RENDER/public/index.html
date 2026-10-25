@@ -5,13 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#110d21">
   <meta name="description" content="Phòng IoT — Không gian thông minh, cảm hứng anime">
-  <title>Phòng IoT · Anime Room</title>
+  <title>Phòng IoT · Anime Room · Sumi-e</title>
   <link rel="stylesheet" href="/style.css">
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="icon" href="/icon.svg">
   <script type="module" src="/app.js"></script>
 </head>
-<body class="loading">
+<body class="loading"><svg class="ink-definitions" width="0" height="0" aria-hidden="true"><defs>
+<filter id="ink-edge" x="-25%" y="-40%" width="150%" height="180%"><feTurbulence type="fractalNoise" baseFrequency=".065" numOctaves="3" seed="9" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="4" xChannelSelector="R" yChannelSelector="G"/><feGaussianBlur stdDeviation=".22"/></filter>
+<filter id="ink-dry" x="-25%" y="-40%" width="150%" height="180%"><feTurbulence type="fractalNoise" baseFrequency=".35 .9" numOctaves="2" seed="5" result="grain"/><feColorMatrix in="grain" type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 9 -4.4" result="scratch"/><feComposite in="SourceGraphic" in2="scratch" operator="in"/></filter>
+<filter id="ink-cloud"><feGaussianBlur stdDeviation="2"/></filter></defs></svg>
   <!-- SVG Symbols Sprite nội bộ (không tải từ CDN ngoài) -->
   <svg class="icon-sprite" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
     <symbol id="i-station" viewBox="0 0 24 24">
@@ -71,8 +74,9 @@
   </svg>
 
   <div class="anime-backdrop" aria-hidden="true">
-    <video id="room-background" muted loop playsinline preload="auto" poster="/poster.jpg">
-      <source src="/bg.mp4" type="video/mp4">
+    <video id="room-background" muted loop playsinline preload="metadata" poster="/poster.jpg">
+      <source media="(min-width: 1000px)" src="/bg-2k.mp4" type="video/mp4">
+      <source src="/bg-720.mp4" type="video/mp4">
     </video>
     <div class="anime-veil"></div>
   </div>
@@ -166,7 +170,7 @@
 
           <div class="clock-chip">
             <svg class="icon icon-sm" aria-hidden="true"><use href="#i-clock"/></svg>
-            <span id="console-clock" class="tabular">--:--:--</span>
+            <span id="console-clock" class="tabular">--:--:—</span>
           </div>
 
           <button id="fx-toggle" class="icon-chip" title="Chuyển chế độ hiệu ứng đồ họa" aria-label="Hiệu ứng đồ họa: Đầy đủ">
@@ -183,9 +187,9 @@
       <section class="anime-hero" aria-labelledby="room-title">
         <div class="hero-art-space" aria-hidden="true"><span class="art-caption">ARKNIGHTS × MUSE DASH</span></div>
         <div class="hero-copy">
-          <span class="hero-eyebrow">KHÔNG GIAN NHỎ · KẾT NỐI LỚN</span>
-          <h1 id="room-title">Căn phòng của bạn.<br><em>Thông minh hơn mỗi ngày.</em></h1>
-          <p>Nhiệt độ, ánh sáng và những chuyển động nhỏ — mọi thứ trong tầm tay.</p>
+          <span class="hero-eyebrow">PHÒNG IoT / ANIME × SUMI-E</span>
+          <h1 id="room-title">Căn phòng thông minh.<br><em>Tiện nghi theo cách của bạn.</em></h1>
+          <p>Theo dõi môi trường và điều khiển quạt, đèn, còi — ngay trên một giao diện.</p>
           <div class="hero-tags"><span>ESP32-C5</span><span>MQTT</span><span id="hero-data-label">Đang kết nối máy chủ</span></div>
         </div>
       </section>
@@ -219,22 +223,21 @@
             </div>
             <div class="kpi-body">
               <div class="kpi-digit-row">
-                <span class="kpi-value tabular" id="val-temperature">--</span>
+                <span class="kpi-value tabular" id="val-temperature">—</span>
                 <span class="kpi-unit">°C</span>
               </div>
-              <span class="kpi-trend" id="trend-temperature">→ Ổn định</span>
+              <span class="kpi-trend" id="trend-temperature">Chưa có dữ liệu</span>
             </div>
             <!-- SVG Arc Gauge với 3 phân vùng ngưỡng: <28 OK (lam), 28-30 cảnh báo (hổ phách), >=30 bật quạt (cam plasma) -->
             <div class="gauge-container">
-              <svg class="galaxy-gauge" id="svg-gauge-temp" viewBox="0 0 200 110" role="img" aria-label="Đồng hồ đo nhiệt độ 0 đến 60 độ C">
-                <path class="gauge-track" d="M 25 95 A 75 75 0 0 1 175 95"></path>
-                <path class="gauge-zone zone-ok" d="M 25 95 A 75 75 0 0 1 95 24"></path>
-                <path class="gauge-zone zone-warn" d="M 95 24 A 75 75 0 0 1 115 22"></path>
-                <path class="gauge-zone zone-danger" d="M 115 22 A 75 75 0 0 1 175 95"></path>
-                <path class="gauge-progress" id="prog-temp" d="M 25 95 A 75 75 0 0 1 25 95"></path>
-                <line class="gauge-needle" id="needle-temp" x1="100" y1="95" x2="35" y2="95"></line>
-                <circle class="gauge-pivot" cx="100" cy="95" r="5"></circle>
-              </svg>
+              <svg class="galaxy-gauge"  id="svg-gauge-temp" viewBox="0 0 200 110" role="img" aria-label="Đồng hồ vệt mực thủy mặc">
+    <path class="ink-mountains" d="M15 98 45 56 64 80 91 44 126 87 151 63 185 99Z"/>
+    <path class="gauge-track" d="M25 95 A75 75 0 0 1 175 95"/>
+    <path class="ink-bleed" pathLength="100" d="M25 95 A75 75 0 0 1 175 95"/>
+    <path class="gauge-progress ink-body" id="prog-temp" pathLength="100" d="M25 95 A75 75 0 0 1 175 95"/>
+    <path class="ink-dry" pathLength="100" d="M25 95 A75 75 0 0 1 175 95"/>
+    <g id="needle-temp" class="ink-tip"><circle cx="25" cy="95" r="4"/></g>
+    <text x="25" y="108" class="ink-axis">0</text><text x="175" y="108" text-anchor="end" class="ink-axis">60</text></svg>
             </div>
             <div class="card-foot">
               <span>Thang: 0 – 60 °C</span>
@@ -253,20 +256,20 @@
             </div>
             <div class="kpi-body">
               <div class="kpi-digit-row">
-                <span class="kpi-value tabular" id="val-humidity">--</span>
+                <span class="kpi-value tabular" id="val-humidity">—</span>
                 <span class="kpi-unit">%</span>
               </div>
-              <span class="kpi-trend" id="trend-humidity">→ Ổn định</span>
+              <span class="kpi-trend" id="trend-humidity">Chưa có dữ liệu</span>
             </div>
             <div class="gauge-container">
-              <svg class="galaxy-gauge" id="svg-gauge-hum" viewBox="0 0 200 110" role="img" aria-label="Đồng hồ đo độ ẩm 0 đến 100 phần trăm">
-                <path class="gauge-track" d="M 25 95 A 75 75 0 0 1 175 95"></path>
-                <path class="gauge-zone zone-ok" d="M 25 95 A 75 75 0 0 1 145 35"></path>
-                <path class="gauge-zone zone-danger" d="M 145 35 A 75 75 0 0 1 175 95"></path>
-                <path class="gauge-progress" id="prog-hum" d="M 25 95 A 75 75 0 0 1 25 95"></path>
-                <line class="gauge-needle" id="needle-hum" x1="100" y1="95" x2="35" y2="95"></line>
-                <circle class="gauge-pivot" cx="100" cy="95" r="5"></circle>
-              </svg>
+              <svg class="galaxy-gauge"  id="svg-gauge-hum" viewBox="0 0 200 110" role="img" aria-label="Đồng hồ vệt mực thủy mặc">
+    <path class="ink-mountains" d="M15 98 45 56 64 80 91 44 126 87 151 63 185 99Z"/>
+    <path class="gauge-track" d="M25 95 A75 75 0 0 1 175 95"/>
+    <path class="ink-bleed" pathLength="100" d="M25 95 A75 75 0 0 1 175 95"/>
+    <path class="gauge-progress ink-body" id="prog-hum" pathLength="100" d="M25 95 A75 75 0 0 1 175 95"/>
+    <path class="ink-dry" pathLength="100" d="M25 95 A75 75 0 0 1 175 95"/>
+    <g id="needle-hum" class="ink-tip"><circle cx="25" cy="95" r="4"/></g>
+    <text x="25" y="108" class="ink-axis">0</text><text x="175" y="108" text-anchor="end" class="ink-axis">100</text></svg>
             </div>
             <div class="card-foot">
               <span>Thang: 0 – 100 %</span>
@@ -275,7 +278,8 @@
           </article>
 
           <!-- KPI 3: Ánh sáng tương đối % (LDR) -->
-          <article class="bento-card kpi-card kpi-light" id="card-light">
+          
+<article class="bento-card kpi-card kpi-light" id="card-light">
             <div class="card-head">
               <div class="card-tag">
                 <svg class="icon icon-sm" aria-hidden="true"><use href="#i-sun"/></svg>
@@ -285,21 +289,20 @@
             </div>
             <div class="kpi-body">
               <div class="kpi-digit-row">
-                <span class="kpi-value tabular" id="val-light">--</span>
+                <span class="kpi-value tabular" id="val-light">—</span>
                 <span class="kpi-unit">%</span>
               </div>
-              <span class="kpi-trend" id="trend-light">→ Ổn định</span>
+              <span class="kpi-trend" id="trend-light">Chưa có dữ liệu</span>
             </div>
             <div class="gauge-container">
-              <svg class="galaxy-gauge" id="svg-gauge-light" viewBox="0 0 200 110" role="img" aria-label="Đồng hồ đo ánh sáng tương đối 0 đến 100 phần trăm">
-                <path class="gauge-track" d="M 25 95 A 75 75 0 0 1 175 95"></path>
-                <path class="gauge-zone zone-danger" d="M 25 95 A 75 75 0 0 1 65 39"></path>
-                <path class="gauge-zone zone-warn" d="M 65 39 A 75 75 0 0 1 85 27"></path>
-                <path class="gauge-zone zone-ok" d="M 85 27 A 75 75 0 0 1 175 95"></path>
-                <path class="gauge-progress" id="prog-light" d="M 25 95 A 75 75 0 0 1 25 95"></path>
-                <line class="gauge-needle" id="needle-light" x1="100" y1="95" x2="35" y2="95"></line>
-                <circle class="gauge-pivot" cx="100" cy="95" r="5"></circle>
-              </svg>
+              <svg class="galaxy-gauge"  id="svg-gauge-light" viewBox="0 0 200 110" role="img" aria-label="Đồng hồ vệt mực thủy mặc">
+    <path class="ink-mountains" d="M15 98 45 56 64 80 91 44 126 87 151 63 185 99Z"/>
+    <path class="gauge-track" d="M25 95 A75 75 0 0 1 175 95"/>
+    <path class="ink-bleed" pathLength="100" d="M25 95 A75 75 0 0 1 175 95"/>
+    <path class="gauge-progress ink-body" id="prog-light" pathLength="100" d="M25 95 A75 75 0 0 1 175 95"/>
+    <path class="ink-dry" pathLength="100" d="M25 95 A75 75 0 0 1 175 95"/>
+    <g id="needle-light" class="ink-tip"><circle cx="25" cy="95" r="4"/></g>
+    <text x="25" y="108" class="ink-axis">0</text><text x="175" y="108" text-anchor="end" class="ink-axis">100</text></svg>
             </div>
             <div class="card-foot">
               <span>Thang: 0 – 100 %</span>
@@ -593,16 +596,13 @@
 
               <div class="setup-details-wrap">
                 <dl id="setup-details" class="setup-dl"></dl>
-                <button type="button" id="reveal-secrets" class="bridge-btn outline sm full-w">
-                  <svg class="icon icon-sm" aria-hidden="true"><use href="#i-shield"/></svg>
-                  <span>Hiện Thông Tin Kết Nối Trạm</span>
-                </button>
+                <p class="privacy-note">Thông tin kết nối được bảo vệ. Mật khẩu và mã truy cập không hiển thị trên giao diện.</p>
               </div>
 
               <div class="gateway-guide-box">
                 <h4>Gateway USB & Ứng Dụng Di Động</h4>
                 <p class="muted">
-                  Thử ngay với ESP32 cắm USB qua file <code>BAT_GATEWAY_USB.cmd</code>. Không cần khai báo mật khẩu Wi-Fi để demo USB.
+                  Thử ngay với ESP32 cắm USB bằng lệnh <code>node gateway-usb.mjs COM17 esp32-room-01</code>. Không cần khai báo mật khẩu Wi-Fi để demo USB.
                 </p>
                 <a href="/downloads/android.apk" class="bridge-btn outline sm full-w">
                   <svg class="icon icon-sm" aria-hidden="true"><use href="#i-download"/></svg>
