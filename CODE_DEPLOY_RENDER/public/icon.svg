@@ -1,1 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" rx="42" fill="#123d30"/><path d="M96 142V87m0 20C57 109 44 82 49 53c35-2 53 20 47 54Zm0-13c-1-33 22-49 51-43 0 29-18 49-51 43Z" fill="#c7e2aa" stroke="#c7e2aa" stroke-width="9" stroke-linecap="round"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <defs>
+    <linearGradient id="cosmic-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#05060f"/>
+      <stop offset="50%" stop-color="#120b2e"/>
+      <stop offset="100%" stop-color="#1c1145"/>
+    </linearGradient>
+    <linearGradient id="neon-glow" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#00f5d4"/>
+      <stop offset="100%" stop-color="#b388ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="42" fill="url(#cosmic-bg)" stroke="url(#neon-glow)" stroke-width="4"/>
+  <path d="M96 36 L148 64 L96 92 L44 64 Z" fill="none" stroke="url(#neon-glow)" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M44 96 L96 124 L148 96" fill="none" stroke="#00f5d4" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M44 128 L96 156 L148 128" fill="none" stroke="#b388ff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="96" cy="64" r="6" fill="#00f5d4"/>
+</svg>
