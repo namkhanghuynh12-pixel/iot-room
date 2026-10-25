@@ -1,1 +1,18 @@
-{"name":"Phòng IoT","short_name":"Phòng IoT","lang":"vi","start_url":"/","scope":"/","display":"standalone","background_color":"#f5f7f3","theme_color":"#123d30","icons":[{"src":"/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"}]}
+{
+  "name": "Trạm Chỉ Huy · Phòng IoT Galaxy",
+  "short_name": "Phòng IoT",
+  "lang": "vi",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#05060f",
+  "theme_color": "#05060f",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

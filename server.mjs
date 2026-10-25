@@ -50,8 +50,8 @@ const equal = (a,b) => { const x = Buffer.from(a || ''), y = Buffer.from(b || ''
 broker.authenticate = (client, username, password, cb) => {
   const role = username === 'esp32' ? 'hardware' : username === 'simulator' ? 'simulation' : null;
   const ok = Boolean(role && equal(password?.toString(), secrets[role]));
-  const validId = role === 'hardware' ? /^esp32-room-0[12]$/.test(client.id) : /^sim-room-0[12]$/.test(client.id);
-  if (ok && validId) client.roomDevice = client.id;
+  const validId = role === 'hardware' ? /^esp32-room-0[12](-gw)?$/.test(client.id) : /^sim-room-0[12]$/.test(client.id);
+  if (ok && validId) client.roomDevice = client.id.replace(/-gw$/, '');
   cb(null, ok && validId);
 };
 broker.authorizePublish = (client, packet, cb) => {
@@ -62,7 +62,7 @@ broker.authorizePublish = (client, packet, cb) => {
 broker.authorizeSubscribe = (client, sub, cb) => cb(null, sub.topic === `iot/${client.roomDevice}/command` ? sub : null);
 broker.on('clientError', (_, err) => { if (!shuttingDown) console.warn('MQTT client:', err.message); });
 broker.on('connectionError', (_, err) => { if (!shuttingDown) console.warn('MQTT connection:', err.message); });
-broker.on('clientDisconnect', client => { if (client.roomDevice) { dev(client.roomDevice).online = false; broadcast(); } });
+broker.on('clientDisconnect', client => { if (client.roomDevice) { const d = dev(client.roomDevice); if (!d.at || Date.now() - Date.parse(d.at) > 12000) { d.online = false; broadcast(); } } });
 broker.on('publish', (packet, client) => {
   if (!client?.roomDevice) return;
   const id = client.roomDevice, d = dev(id), kind = packet.topic.split('/')[2];
@@ -137,7 +137,7 @@ const server = http.createServer(async (req,res) => {
     if (req.method === 'GET' && url.pathname === '/api/history') return json(res,latestHistory(activeId(),1000));
     if (req.method === 'GET' && url.pathname === '/api/setup') {
       let ssid='';try{if(process.platform==='win32')ssid=execFileSync('netsh.exe',['wlan','show','interfaces'],{encoding:'utf8',windowsHide:true,timeout:3000}).match(/^\s+SSID\s*:\s*(.+)$/m)?.[1]?.trim()||'';}catch{}
-      const ports=(await SerialPort.list()).map(x=>x.path);
+      let ports=[];try{ports=(await SerialPort.list()).map(x=>x.path);}catch{}
       return json(res,{ addresses, ssid,ports,port,mqttPort, username:'esp32', password:secrets.hardware, accessToken:secrets.accessToken, deviceId:'esp32-room-01', firmware:'firmware/room_monitor/room_monitor.ino' });
     }
     if (req.method === 'GET' && url.pathname === '/api/export') {

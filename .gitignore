@@ -8,3 +8,11 @@ firmware/room_monitor/local_defaults.h
 *.zip
 backups/
 maintenance/
+clients/android/.gradle/
+clients/android/build/
+clients/android/app/build/
+.gradle/
+build/
+clients/android/.gradle/
+clients/android/build/
+local.properties

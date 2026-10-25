@@ -1,22 +1,859 @@
-<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#6554d9"><meta name="description" content="Phòng IoT — giám sát và điều khiển phòng ở thông minh với ESP32."><title>Phòng IoT · Không gian thông minh</title><link rel="stylesheet" href="/style.css"><link rel="manifest" href="/manifest.webmanifest"><link rel="icon" href="/icon.svg"><script src="/app.js" defer></script></head><body class="loading"><svg class="icon-sprite" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10 12 3l9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></symbol><symbol id="i-grid" viewBox="0 0 24 24"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z"/></symbol><symbol id="i-chip" viewBox="0 0 24 24"><path d="M7 7h10v10H7zM9 1v4m6-4v4M9 19v4m6-4v4M1 9h4m-4 6h4M19 9h4m-4 6h4"/></symbol><symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18M6 14l4-5 4 3 6-7"/></symbol><symbol id="i-bolt" viewBox="0 0 24 24"><path d="m13 2-9 12h7l-1 8 10-12h-7z"/></symbol><symbol id="i-settings" viewBox="0 0 24 24"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M5 19l2-2M17 7l2-2"/></symbol><symbol id="i-book" viewBox="0 0 24 24"><path d="M4 3h12a3 3 0 0 1 3 3v15H6a3 3 0 0 1-3-3V4a1 1 0 0 1 1-1ZM3 17h16M7 7h8m-8 4h6"/></symbol><symbol id="i-sun" viewBox="0 0 24 24"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM12 1v3m0 16v3M1 12h3m16 0h3M4 4l2 2m12 12 2 2M4 20l2-2M18 6l2-2"/></symbol><symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 15A9 9 0 0 1 9 4 9 9 0 1 0 20 15Z"/></symbol><symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m-4-4 4 4 4-4M4 16v5h16v-5"/></symbol><symbol id="i-temp" viewBox="0 0 24 24"><path d="M9 14V5a3 3 0 0 1 6 0v9a5 5 0 1 1-6 0ZM12 8v9"/></symbol><symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 2c-3 5-8 9-8 13a8 8 0 0 0 16 0c0-4-5-8-8-13ZM8 15a4 4 0 0 0 4 4"/></symbol><symbol id="i-wind" viewBox="0 0 24 24"><path d="M3 8h12a3 3 0 1 0-3-3M3 12h15a3 3 0 1 1-3 3M3 16h5a3 3 0 1 1-3 3"/></symbol><symbol id="i-fan" viewBox="0 0 24 24"><path d="M12 12c-6-1-9-4-7-7s7-1 7 7c1-6 4-9 7-7s1 7-7 7c6 1 9 4 7 7s-7 1-7-7c-1 6-4 9-7 7s-1-7 7-7ZM12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/></symbol><symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6m-6 3h6M8 14a7 7 0 1 1 8 0l-1 2H9Z"/></symbol><symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0v6l-3 3h18l-3-3ZM10 21h4"/></symbol><symbol id="i-wifi" viewBox="0 0 24 24"><path d="M2 8a16 16 0 0 1 20 0M5 12a11 11 0 0 1 14 0M8 16a6 6 0 0 1 8 0M12 20h.01"/></symbol><symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-5-5 5 5-5 5"/></symbol><symbol id="i-motion" viewBox="0 0 24 24"><path d="M15 4h.01M12 8l-3 4-5 1m8-5 5 5 4 1m-9-6 2 6-4 7m4-7 3 6"/></symbol><symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol><symbol id="i-clock" viewBox="0 0 24 24"><path d="M12 8v5l3 2M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Z"/></symbol><symbol id="i-shield" viewBox="0 0 24 24"><path d="m12 2 8 3v6c0 5-4 9-8 11-4-2-8-6-8-11V5Z"/></symbol></svg>
-<a class="skip-link" href="#main-content">Đến nội dung chính</a>
-<aside class="sidebar"><a class="brand" href="/" aria-label="Phòng IoT — Trang chủ"><span class="brand-mark"><svg class="icon " aria-hidden="true"><use href="#i-home"/></svg></span><span>phòng<span class="brand-iot">iot</span><small>YOUR SPACE, CONNECTED.</small></span></a><div class="navlabel">KHÔNG GIAN CỦA BẠN</div><nav aria-label="Điều hướng chính"><button class="nav active" data-page="dashboard" aria-current="page"><svg class="icon " aria-hidden="true"><use href="#i-grid"/></svg><span>Tổng quan</span></button><button class="nav " data-page="devices" aria-current="false"><svg class="icon " aria-hidden="true"><use href="#i-chip"/></svg><span>Thiết bị</span></button><button class="nav " data-page="history" aria-current="false"><svg class="icon " aria-hidden="true"><use href="#i-chart"/></svg><span>Lịch sử</span></button><button class="nav " data-page="rules" aria-current="false"><svg class="icon " aria-hidden="true"><use href="#i-bolt"/></svg><span>Tự động hóa</span></button><button class="nav " data-page="config" aria-current="false"><svg class="icon " aria-hidden="true"><use href="#i-settings"/></svg><span>Cấu hình</span></button><button class="nav " data-page="guide" aria-current="false"><svg class="icon " aria-hidden="true"><use href="#i-book"/></svg><span>Linh kiện & đồ án</span></button></nav><div class="sidebar-card"><svg class="icon " aria-hidden="true"><use href="#i-shield"/></svg><b>Kết nối trong tầm tay.</b><p>Dữ liệu được lưu trên laptop.<br>Điều khiển có phản hồi.</p><span class="local-tag">LOCAL FIRST</span></div><div class="sidebar-bottom"><span class="mini-avatar">P</span><div><b>Phòng IoT Lab</b><small>Đồ án ESP32-C5</small></div><span class="version">02</span></div></aside>
-<main id="main-content"><header><div><div class="eyebrow">KHÔNG GIAN SỐNG / <span id="current-date">HÔM NAY</span></div><h1 id="page-title">Tổng quan phòng ở<span class="title-dot">.</span></h1><p class="subtitle" id="page-subtitle">Một góc nhìn cho mọi điều kiện trong phòng.</p></div><div class="header-actions"><span id="broker-status" class="badge neutral">Đang kết nối</span><button id="theme-toggle" class="icon-button" aria-label="Đổi giao diện sáng hoặc tối"><svg class="icon " aria-hidden="true"><use href="#i-moon"/></svg></button><button id="export" class="button outline"><svg class="icon " aria-hidden="true"><use href="#i-download"/></svg><span>Xuất CSV</span></button></div></header>
-<div id="notice" role="status" class="notice hidden"></div><section id="login" class="panel login-panel hidden"><span class="metric-icon"><svg class="icon " aria-hidden="true"><use href="#i-shield"/></svg></span><h2>Kết nối với phòng của bạn</h2><p>Nhập mã truy cập lấy từ trang Cấu hình trên laptop máy chủ.</p><form id="login-form"><label>Mã truy cập<div class="password-row"><input id="access-token" type="password" autocomplete="current-password" required><button type="button" id="show-token" class="button outline">Hiện</button></div></label><button class="button">Kết nối an toàn</button></form></section>
-<div class="workspace-bar"><div class="segmented" aria-label="Nguồn dữ liệu"><button id="source-sim" class="selected"><svg class="icon " aria-hidden="true"><use href="#i-chip"/></svg> Mô phỏng</button><button id="source-hw">ESP32 thật</button></div><label class="device-select"><svg class="icon " aria-hidden="true"><use href="#i-home"/></svg><select id="device-select" aria-label="Chọn phòng"><option value="esp32-room-01">Phòng ngủ · 01</option><option value="esp32-room-02">Phòng khách · 02</option></select></label><span id="last-update">Chờ dữ liệu…</span></div>
-<section id="page-dashboard" class="page">
-<div class="room-hero"><div class="room-copy"><span class="hero-eyebrow">KHÔNG GIAN ĐANG THEO DÕI</span><h2 id="room-name">Phòng ngủ</h2><p id="room-summary">Sẵn sàng cho một ngày thoải mái hơn.</p><div class="hero-pills"><span id="connection" class="hero-pill">Đang kết nối…</span><span id="motion-state" class="hero-pill">PIR: chờ dữ liệu</span></div></div>
-<svg class="room-art" viewBox="0 0 340 160" role="img" aria-label="Minh họa trạng thái phòng ở"><path d="m40 115 115-61 143 61-113 38Z" fill="#ada6eb" opacity=".2"/><path d="M40 115V43l115-32v43M155 11l143 40v64L155 54" fill="none" stroke="#ccc5ff" stroke-width="1.3"/><path d="m55 49 30-9v36l-30 11Z" fill="#aaa3ed" opacity=".4"/><path d="m62 51 16-5v24l-16 6Z" fill="#dbd8ff" opacity=".55"/><path d="m112 91 62-29 68 29-59 32Z" fill="#d9d5fa"/><path d="m112 91 71 32v20l-71-33Z" fill="#7f71c8"/><path d="m183 123 59-32v20l-59 32Z" fill="#9b8cdd"/><path d="m127 86 45-20 30 13-44 23Z" fill="#fff" opacity=".8"/><path d="m176 95 35-17 20 11-34 18Z" fill="#b1a7ef"/><path d="m268 66-15 9v30l15-8Z" fill="#7770bd"/><path d="M265 68V43m-8 4 8-13 8 9Z" fill="#f5db9d" class="art-lamp"/><circle cx="111" cy="29" r="6" fill="#b9eccd" class="art-sensor"/><path d="M111 21v16m-8-8h16" stroke="#51449e" stroke-width="1.5"/><circle cx="52" cy="113" r="4" fill="#c3bef3"/><path d="M52 109V92m0 7-7-8m7 5 7-8" stroke="#c3bef3" stroke-width="2"/></svg>
-<div class="room-stat"><span class="eyebrow">NÚT ĐANG TRỰC TUYẾN</span><div><b id="online-count">—</b><span>/ <span id="total-count">—</span></span></div><p id="room-mode">Đang đồng bộ trạng thái</p></div></div>
-<div id="source-banner" class="source-banner">DỮ LIỆU MÔ PHỎNG · Số liệu dùng để kiểm thử, không phải phép đo thực tế.</div>
-<div class="metrics"><article class="metric metric-temperature"><div class="metric-top"><span class="metric-icon"><svg class="icon " aria-hidden="true"><use href="#i-temp"/></svg></span><span>Nhiệt độ</span><span id="trend-temperature" class="trend">—</span></div><div class="metric-value"><span id="temperature">--</span><small>°C</small></div><canvas id="gauge-temperature" role="img" aria-label="Đồng hồ nhiệt độ"></canvas><div class="metric-foot"><span>DHT22</span><span>0–60 °C</span></div></article><article class="metric metric-humidity"><div class="metric-top"><span class="metric-icon"><svg class="icon " aria-hidden="true"><use href="#i-drop"/></svg></span><span>Độ ẩm không khí</span><span id="trend-humidity" class="trend">—</span></div><div class="metric-value"><span id="humidity">--</span><small>%</small></div><canvas id="gauge-humidity" role="img" aria-label="Đồng hồ độ ẩm không khí"></canvas><div class="metric-foot"><span>DHT22</span><span>0–100 %</span></div></article><article class="metric metric-airQuality"><div class="metric-top"><span class="metric-icon"><svg class="icon " aria-hidden="true"><use href="#i-wind"/></svg></span><span>Chỉ số khí</span><span id="trend-airQuality" class="trend">—</span></div><div class="metric-value"><span id="airQuality">--</span><small>điểm</small></div><canvas id="gauge-airQuality" role="img" aria-label="Đồng hồ chỉ số khí"></canvas><div class="metric-foot"><span>MQ135 · tương đối</span><span>0–100 điểm</span></div></article><article class="metric metric-light"><div class="metric-top"><span class="metric-icon"><svg class="icon " aria-hidden="true"><use href="#i-sun"/></svg></span><span>Ánh sáng</span><span id="trend-light" class="trend">—</span></div><div class="metric-value"><span id="light">--</span><small>%</small></div><canvas id="gauge-light" role="img" aria-label="Đồng hồ ánh sáng"></canvas><div class="metric-foot"><span>LDR · tương đối</span><span>0–100 %</span></div></article></div>
-<div class="content-grid"><article class="panel chart-panel"><div class="panel-heading"><div><span class="eyebrow">MÔI TRƯỜNG TRONG PHÒNG</span><h2>Những thay đổi nhỏ, theo thời gian</h2></div><span id="sample-count" class="badge neutral">0 bản ghi</span></div><div class="chart-toolbar"><div class="legend"><button type="button" class="legend-item enabled legend-temperature" data-series="temperature" aria-pressed="true"><span></span>Nhiệt độ</button><button type="button" class="legend-item enabled legend-humidity" data-series="humidity" aria-pressed="true"><span></span>Độ ẩm</button><button type="button" class="legend-item enabled legend-airQuality" data-series="airQuality" aria-pressed="true"><span></span>Chỉ số khí</button><button type="button" class="legend-item enabled legend-light" data-series="light" aria-pressed="true"><span></span>Ánh sáng</button></div><span class="live-label"><i></i> Trực tiếp</span></div><div class="chart-wrap"><canvas id="history-chart" aria-label="Biểu đồ bốn chỉ số môi trường theo thời gian" role="img"></canvas><div id="chart-tooltip" class="chart-tooltip hidden" role="status"></div></div><p class="chart-caption">100 điểm gần nhất · Trục tung dùng giá trị của từng chỉ số; đơn vị khác nhau · <button class="inline-link" data-go="history">Xem lịch sử <svg class="icon " aria-hidden="true"><use href="#i-arrow"/></svg></button></p></article>
-<article class="panel controls"><div class="panel-heading"><div><span class="eyebrow">THIẾT BỊ CHẤP HÀNH</span><h2>Chạm để điều khiển</h2></div><span class="control-count">03</span></div><label class="mode-row"><span>Chế độ hoạt động</span><select id="control-mode"><option value="auto">Tự động</option><option value="manual">Thủ công</option></select></label><div class="actuator" id="actuator-fan"><span class="act-icon"><svg class="icon " aria-hidden="true"><use href="#i-fan"/></svg></span><div class="act-label"><b>Quạt thông gió</b><small>DC 12 V · 1 A</small><span id="fan-state" class="act-state">Chưa xác nhận</span></div><button id="fan-toggle" class="toggle" aria-label="Bật hoặc tắt quạt thông gió" aria-pressed="false" disabled></button></div><div class="actuator" id="actuator-led"><span class="act-icon"><svg class="icon " aria-hidden="true"><use href="#i-bulb"/></svg></span><div class="act-label"><b>Đèn phòng</b><small>Chiếu sáng theo hiện diện</small><span id="led-state" class="act-state">Chưa xác nhận</span></div><button id="led-toggle" class="toggle" aria-label="Bật hoặc tắt đèn phòng" aria-pressed="false" disabled></button></div><div class="actuator" id="actuator-buzzer"><span class="act-icon"><svg class="icon " aria-hidden="true"><use href="#i-bell"/></svg></span><div class="act-label"><b>Còi cảnh báo</b><small>Tự ngắt tối đa 10 giây</small><span id="buzzer-state" class="act-state">Chưa xác nhận</span></div><button id="buzzer-toggle" class="toggle" aria-label="Bật hoặc tắt còi cảnh báo" aria-pressed="false" disabled></button></div><p id="control-hint" class="control-hint">Đang đọc quy tắc…</p><p id="ack" class="ack">Trạng thái theo phản hồi từ thiết bị.</p></article></div>
-<div id="alert-box" class="alert-box">Đang kiểm tra điều kiện môi trường…</div>
-<div class="bottom-grid"><article class="panel"><div class="panel-heading"><div><span class="eyebrow">KHÔNG CẦN PHẦN CỨNG</span><h2>Thử một tình huống</h2></div><span class="badge purple">DEMO</span></div><p class="muted">Thay đổi môi trường và xem phòng tự phản ứng.</p><div class="scenario-buttons"><button data-scenario="normal"><svg class="icon " aria-hidden="true"><use href="#i-home"/></svg> Bình thường</button><button data-scenario="hot"><svg class="icon " aria-hidden="true"><use href="#i-temp"/></svg> Nóng lên</button><button data-scenario="cool"><svg class="icon " aria-hidden="true"><use href="#i-wind"/></svg> Hạ nhiệt</button><button data-scenario="polluted"><svg class="icon " aria-hidden="true"><use href="#i-bell"/></svg> Khí cao</button><button data-scenario="dark"><svg class="icon " aria-hidden="true"><use href="#i-moon"/></svg> Phòng tối</button></div><form id="sim-form" class="sim-form"><label>Nhiệt độ °C<input id="sim-temp" type="number" value="32" min="-40" max="80" step="0.1" required></label><label>Độ ẩm %<input id="sim-hum" type="number" value="65" min="0" max="100" required></label><label>Chỉ số khí<input id="sim-airQuality" type="number" value="25" min="0" max="100" required></label><label>Ánh sáng %<input id="sim-light" type="number" value="20" min="0" max="100" required></label><label>Chuyển động<select id="sim-motion"><option value="true">Có</option><option value="false">Không</option></select></label><button class="button">Áp dụng <svg class="icon " aria-hidden="true"><use href="#i-arrow"/></svg></button></form><button id="sim-offline" class="text-button">Tạm ngắt node mô phỏng</button></article><article class="panel activity-panel"><div class="panel-heading"><div><span class="eyebrow">NHẬT KÝ HOẠT ĐỘNG</span><h2>Chuyện gì đang diễn ra?</h2></div><svg class="icon " aria-hidden="true"><use href="#i-clock"/></svg></div><ul id="event-list" class="event-list"><li>Chờ dữ liệu…</li></ul></article></div></section>
-<section id="page-devices" class="page hidden"><div class="panel"><div class="eyebrow">KẾT NỐI TỪNG KHÔNG GIAN</div><h2>Các nút trong hệ thống</h2><p class="muted">Lịch sử và phản hồi điều khiển riêng cho từng phòng. Chọn một thẻ để xem tổng quan của phòng đó.</p><div id="device-list" class="device-grid"></div></div></section>
-<section id="page-history" class="page hidden"><article class="panel"><div class="panel-heading"><div><span class="eyebrow">DỮ LIỆU ĐƯỢC LƯU TRÊN LAPTOP</span><h2>Lịch sử môi trường</h2></div><button id="history-refresh" class="button outline">Tải lại</button></div><div class="history-filters"><label>Khoảng thời gian<select id="history-period"><option value="1">1 giờ gần nhất</option><option value="24" selected>24 giờ gần nhất</option><option value="168">7 ngày gần nhất</option><option value="all">Toàn bộ dữ liệu đã tải</option></select></label><span id="history-summary" class="muted"></span></div><p class="muted">Hiển thị tối đa 1.000 mẫu mới nhất của phòng đang chọn. Xuất CSV ở góc trên để tải tập dữ liệu đầy đủ hơn.</p><div class="table-wrap"><table><thead><tr><th>Thời gian</th><th>Nhiệt độ °C</th><th>Độ ẩm %</th><th>Chỉ số khí</th><th>Ánh sáng %</th><th>Chuyển động</th></tr></thead><tbody id="history-rows"></tbody></table></div><div class="pagination"><span id="history-page-label"></span><div><button id="history-prev" class="button outline">Trước</button><button id="history-next" class="button outline">Sau</button></div></div></article></section>
-<section id="page-rules" class="page hidden"><div class="panel"><div class="eyebrow">ĐIỀU KHIỂN TỰ ĐỘNG</div><h2>Để căn phòng tự chăm sóc mình</h2><p>Ngưỡng bật và tắt khác nhau để thiết bị không bật tắt liên tục. Đây là giá trị demo; điều chỉnh theo nhu cầu sử dụng phòng và vị trí lắp thực tế.</p><form id="rules-form" class="rules-form"><fieldset><legend>01 / Thông gió</legend><label>Bật quạt từ °C<input name="onTemperature" type="number" min="1" max="60" required></label><label>Tắt quạt dưới °C<input name="offTemperature" type="number" min="0" max="59" required></label></fieldset><fieldset><legend>02 / Cảnh báo khí</legend><label>Bật còi khi chỉ số khí ≥<input name="airQualityOn" type="number" min="0" max="95" required></label><label>Tắt còi khi chỉ số khí ≤<input name="airQualityOff" type="number" min="5" max="100" required></label></fieldset><fieldset><legend>03 / Chiếu sáng thông minh</legend><label>Bật đèn khi ánh sáng ≤ %<input name="lightOn" type="number" min="0" max="95" required></label><label>Tắt đèn khi ánh sáng ≥ %<input name="lightOff" type="number" min="5" max="100" required></label></fieldset><label>Cảnh báo độ ẩm không khí từ %<input name="humidityAlert" type="number" min="1" max="100" required></label><button class="button">Lưu quy tắc</button></form><div class="info-note">Còi dừng tối đa sau 10 giây liên tục và khóa đến khi nhận lệnh TẮT. Thiết bị dừng đầu ra khi hết 30 giây không có lệnh hợp lệ. Điều khiển tự động cần gateway đang chạy.</div></div></section>
-<section id="page-config" class="page hidden"><article class="panel"><div class="eyebrow">CẤU HÌNH WIFI QUA CÁP USB</div><h2>Kết nối ESP32 vào Wi-Fi ngay trên laptop</h2><p>Không cần đổi mạng trên điện thoại. Cắm ESP32, đóng Serial Monitor và gateway USB rồi nhập mật khẩu Wi-Fi vào đây. Mật khẩu được gửi xuống board và không lưu vào database của laptop.</p><form id="wifi-form" class="wifi-form"><label>Tên Wi-Fi<input id="wifi-ssid" maxlength="32" required autocomplete="off"></label><label>Mật khẩu Wi-Fi<input id="wifi-pass" type="password" maxlength="64" autocomplete="off" placeholder="Nhập tại đây, không gửi vào chat"></label><label>IP laptop chạy MQTT<input id="wifi-broker" required placeholder="172.16.0.109"></label><label>Cổng USB<input id="wifi-com" value="COM16" required pattern="COM[0-9]+"></label><label>Thiết bị<select id="wifi-device"><option value="esp32-room-01">Phòng ngủ / 01</option><option value="esp32-room-02">Phòng khách / 02</option></select></label><button id="wifi-submit" class="button">Lưu Wi-Fi xuống ESP32</button></form><p id="wifi-result" role="status" class="muted">Sau khi lưu, đợi board khởi động và xuất hiện trực tuyến.</p></article><div class="bottom-grid"><article class="panel"><h2>Kết nối ESP32 qua Wi-Fi</h2><p>ESP32 tạo Wi-Fi <b>PhongIoT-Config</b>. Kết nối và mở <b>192.168.4.1</b> để nhập thông tin bên dưới. Mật khẩu Wi-Fi cấu hình mặc định: <code>phongiot2026</code>.</p><dl id="setup-details"></dl><button id="reveal-secrets" class="button outline">Hiện thông tin kết nối</button><p class="muted">Cổng MQTT 1883 · Web và API 8765 · Chỉ sử dụng trong mạng nội bộ tin cậy.</p></article><article class="panel"><h2>Gateway USB → MQTT</h2><p>Có thể thử ngay với ESP32 đang cắm USB: gateway trên laptop đọc JSON từ cổng COM, chuyển thành MQTT và đưa lệnh trở lại board.</p><ol><li>Nạp firmware theo hướng dẫn trong thư mục dự án.</li><li>Chạy <code>BAT_GATEWAY_USB.cmd</code>.</li><li>Chọn <b>ESP32 thật</b> trên trang Tổng quan.</li></ol><p class="muted">Không cần khai báo mật khẩu Wi-Fi để demo qua USB. Firmware sẽ ghi rõ dữ liệu giả khi chưa có cảm biến.</p><h3>Điện thoại & ứng dụng</h3><p>Dùng IP LAN trong thông tin kết nối và mã truy cập. Dự án kèm mã Android, iOS, Java và C#; trạng thái build được ghi trong bảng tiêu chí.</p></article></div></section>
-<section id="page-guide" class="page hidden"><div class="panel"><div class="eyebrow">Ý TƯỞNG ĐỒ ÁN</div><h2>Phòng thông minh hai khu vực</h2><p>Giám sát môi trường, cảnh báo theo mức khí tương đối và phát hiện chuyển động, thông gió theo nhiệt độ và bổ sung ánh sáng. Mỗi khu vực dùng một ESP32; laptop đóng vai trò edge gateway, broker MQTT và máy chủ web.</p><h3>Danh sách linh kiện cần bổ sung</h3><div class="table-wrap"><table><thead><tr><th>Linh kiện</th><th>Cho 1 khu</th><th>Cho 2 khu</th><th>Công dụng</th></tr></thead><tbody><tr><td>ESP32</td><td>1, bạn đã có</td><td>2 tổng cộng</td><td>Nút cảm biến và điều khiển</td></tr><tr><td>DHT22 module 3,3 V</td><td>1</td><td>2</td><td>Nhiệt độ và độ ẩm không khí</td></tr><tr><td>MQ135 + mạch chia áp 3,3 V</td><td>1</td><td>2</td><td>Chỉ số tương đối, không phải AQI/CO₂</td></tr><tr><td>LDR + điện trở 10 kΩ</td><td>1 bộ</td><td>2 bộ</td><td>Ánh sáng tương đối</td></tr><tr><td>PIR HC-SR501</td><td>1</td><td>2</td><td>Phát hiện chuyển động</td></tr><tr><td>Quạt DC 12 V · 1 A</td><td>1</td><td>2</td><td>Thông gió</td></tr><tr><td>Module còi active nhận logic 3,3 V</td><td>1 bộ</td><td>2 bộ</td><td>Cảnh báo demo</td></tr><tr><td>LED + điện trở 1 kΩ</td><td>1 bộ</td><td>2 bộ</td><td>Đèn demo</td></tr><tr><td>Mạch MOSFET nhận logic 3,3 V</td><td>1 kênh</td><td>2 kênh</td><td>Đóng cắt quạt DC</td></tr><tr><td>Diode bảo vệ tải cảm</td><td>2</td><td>4</td><td>Dùng nếu driver chưa có bảo vệ</td></tr><tr><td>Adapter 12 V ≥ 3 A + nguồn hạ áp 5 V</td><td>1</td><td>1–2</td><td>Cấp tải riêng với GPIO</td></tr><tr><td>Breadboard, dây, cáp USB data</td><td>1 bộ</td><td>2 bộ</td><td>Lắp và nạp chương trình</td></tr></tbody></table></div><p class="info-note">Bắt đầu bằng LED và nguồn thấp áp. Không nối còi hoặc quạt trực tiếp vào chân ESP32. Chân đấu nối phải theo đúng biến thể ESP32 thực tế; xem tài liệu phần cứng trong thư mục dự án.</p><p><a class="button" href="/downloads/android.apk">Tải ứng dụng Android APK</a></p><h3>Trình tự demo trước giảng viên</h3><ol><li>Mở hai nút mô phỏng và chỉ ra topic JSON riêng.</li><li>Cho nhiệt độ tăng, không khí xấu và phòng tối; quan sát ba đầu ra tự động.</li><li>Chuyển thủ công, kiểm tra phản hồi thiết bị và nhật ký.</li><li>Xuất CSV, khởi động lại máy chủ và mở lịch sử đã lưu.</li><li>Demo ESP32 thật qua USB hoặc Wi-Fi và trang cấu hình.</li><li>Trình bày ứng dụng khách, gateway và bảng minh chứng. Phần chưa thử trên thiết bị thật phải ghi rõ.</li></ol></div></section>
-<footer><span class="footer-brand">phòng<b>iot</b></span><span>Không gian của bạn. Kết nối theo cách của bạn.</span><span id="gateway-uptime">Đang kết nối gateway…</span></footer></main><div id="toast" role="alert" class="toast hidden"></div></body></html>
+<!doctype html>
+<html lang="vi" data-theme="dark" data-fx="full">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#05060f">
+  <meta name="description" content="Đài chỉ huy Phòng IoT — Giám sát và điều khiển phòng ở thông minh Galaxy">
+  <title>Trạm Chỉ Huy · Phòng IoT</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icon.svg">
+  <script src="/app.js" defer></script>
+</head>
+<body class="loading">
+  <!-- SVG Symbols Sprite nội bộ (không tải từ CDN ngoài) -->
+  <svg class="icon-sprite" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="i-station" viewBox="0 0 24 24">
+      <path d="M12 2 2 7l10 5 10-5-10-5Zm0 7-10 5 10 5 10-5-10-5Zm0 7-10 5 10 5 10-5-10-5Z"/>
+    </symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24">
+      <path d="M3 3h7v7H3zm11 0h7v7h-7zM3 14h7v7H3zm11 0h7v7h-7z"/>
+    </symbol>
+    <symbol id="i-chip" viewBox="0 0 24 24">
+      <path d="M7 7h10v10H7zM9 1v4m6-4v4M9 19v4m6-4v4M1 9h4m-4 6h4M19 9h4m-4 6h4"/>
+    </symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24">
+      <path d="m13 2-9 12h7l-1 8 10-12h-7z"/>
+    </symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24">
+      <path d="M3 3v18h18M6 14l4-5 4 3 6-7"/>
+    </symbol>
+    <symbol id="i-temp" viewBox="0 0 24 24">
+      <path d="M9 14V5a3 3 0 0 1 6 0v9a5 5 0 1 1-6 0Zm3-6v9"/>
+    </symbol>
+    <symbol id="i-drop" viewBox="0 0 24 24">
+      <path d="M12 2c-3 5-8 9-8 13a8 8 0 0 0 16 0c0-4-5-8-8-13Z"/>
+    </symbol>
+    <symbol id="i-gas" viewBox="0 0 24 24">
+      <path d="M4 19h16M4 15h12M4 11h14M4 7h8M4 3h16"/>
+    </symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24">
+      <path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M5 19l2-2M17 7l2-2"/>
+    </symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24">
+      <path d="M20 15A9 9 0 0 1 9 4 9 9 0 1 0 20 15Z"/>
+    </symbol>
+    <symbol id="i-radar" viewBox="0 0 24 24">
+      <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm0 4a6 6 0 1 0 6 6 6 6 0 0 0-6-6Zm0 4a2 2 0 1 0 2 2 2 2 0 0 0-2-2Zm0-8v2m0 16v2m-10-10h2m16 0h2"/>
+    </symbol>
+    <symbol id="i-fan" viewBox="0 0 24 24">
+      <path d="M12 12c-6-1-9-4-7-7s7-1 7 7c1-6 4-9 7-7s1 7-7 7c6 1 9 4 7 7s-7 1-7-7c-1 6-4 9-7 7s-1-7 7-7Zm0-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/>
+    </symbol>
+    <symbol id="i-bulb" viewBox="0 0 24 24">
+      <path d="M9 18h6m-6 3h6M8 14a7 7 0 1 1 8 0l-1 2H9Z"/>
+    </symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24">
+      <path d="M18 8a6 6 0 0 0-12 0v6l-3 3h18l-3-3Zm-8 13h4"/>
+    </symbol>
+    <symbol id="i-download" viewBox="0 0 24 24">
+      <path d="M12 3v12m-4-4 4 4 4-4M4 17v4h16v-4"/>
+    </symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24">
+      <path d="m12 2 8 3v6c0 5-4 9-8 11-4-2-8-6-8-11V5Z"/>
+    </symbol>
+    <symbol id="i-sparkle" viewBox="0 0 24 24">
+      <path d="m12 2 2.5 6.5L21 11l-6.5 2.5L12 20l-2.5-6.5L3 11l6.5-2.5Z"/>
+    </symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24">
+      <path d="M21 4v6h-6M3 20v-6h6M20 10A9 9 0 0 0 5 7M4 14a9 9 0 0 0 15 3"/>
+    </symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24">
+      <path d="M12 7v5l3 2M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Z"/>
+    </symbol>
+  </svg>
+
+  <!-- Lớp Canvas Sao Parallax 3 tầng & Tinh vân Galaxy -->
+  <div class="galaxy-viewport" aria-hidden="true">
+    <canvas id="starfield-canvas" class="starfield-canvas"></canvas>
+    <div class="nebula-spot nebula-1"></div>
+    <div class="nebula-spot nebula-2"></div>
+    <div class="nebula-spot nebula-3"></div>
+  </div>
+
+  <div class="app-shell">
+    <!-- Sidebar Trạm Chỉ Huy -->
+    <aside class="sidebar-bridge">
+      <div class="bridge-brand">
+        <div class="brand-emblem">
+          <svg class="icon icon-lg" aria-hidden="true"><use href="#i-station"/></svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">ĐÀI CHỈ HUY</span>
+          <span class="brand-sub">PHÒNG IoT GALAXY</span>
+        </div>
+      </div>
+
+      <nav class="bridge-nav" aria-label="Điều hướng trạm">
+        <button class="nav-item active" data-tab="dashboard" aria-current="page">
+          <svg class="icon" aria-hidden="true"><use href="#i-grid"/></svg>
+          <span>Tổng quan</span>
+        </button>
+        <button class="nav-item" data-tab="devices" aria-current="false">
+          <svg class="icon" aria-hidden="true"><use href="#i-chip"/></svg>
+          <span>Thiết bị & Kết nối</span>
+        </button>
+        <button class="nav-item" data-tab="rules" aria-current="false">
+          <svg class="icon" aria-hidden="true"><use href="#i-bolt"/></svg>
+          <span>Tự động hóa</span>
+        </button>
+        <button class="nav-item" data-tab="history" aria-current="false">
+          <svg class="icon" aria-hidden="true"><use href="#i-chart"/></svg>
+          <span>Quỹ đạo Lịch sử</span>
+        </button>
+      </nav>
+
+      <div class="bridge-telemetry">
+        <div class="telemetry-box">
+          <div class="telemetry-row">
+            <span class="muted">Giao thức:</span>
+            <span class="telemetry-val">MQTT ↔ SSE</span>
+          </div>
+          <div class="telemetry-row">
+            <span class="muted">Broker Aedes:</span>
+            <span class="telemetry-val" id="sidebar-broker-port">:1883</span>
+          </div>
+          <div class="telemetry-row">
+            <span class="muted">Bộ nhớ đệm:</span>
+            <span class="telemetry-val">SQLite WAL</span>
+          </div>
+        </div>
+        <button id="quick-csv-btn" class="bridge-btn outline full-w">
+          <svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>
+          <span>Xuất Dữ Liệu CSV</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Khu vực điều khiển chính (Main Console) -->
+    <main class="console-stage" id="main-content">
+      <!-- Thanh điều khiển trạm trưởng (Top Control Bar) -->
+      <header class="command-bar bento-glass">
+        <div class="command-left">
+          <div class="source-segmented" role="radiogroup" aria-label="Nguồn dữ liệu">
+            <button id="source-sim" class="seg-btn active" role="radio" aria-checked="true">
+              <span class="btn-dot"></span>
+              <span>Mô phỏng</span>
+            </button>
+            <button id="source-hw" class="seg-btn" role="radio" aria-checked="false">
+              <span class="btn-dot"></span>
+              <span>ESP32 thật</span>
+            </button>
+          </div>
+
+          <div class="room-selector">
+            <label for="device-select" class="visually-hidden">Chọn không gian phòng</label>
+            <select id="device-select" class="galaxy-select" aria-label="Chọn không gian phòng">
+              <option value="esp32-room-01">Khu vực 01 · Phòng ngủ</option>
+              <option value="esp32-room-02">Khu vực 02 · Phòng khách</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="command-right">
+          <div class="pulse-status" id="pulse-wrapper">
+            <span class="sonar-ring" id="connection-pulse"></span>
+            <span class="sonar-core" id="connection-core"></span>
+            <span class="status-label" id="connection-text">Đang đồng bộ...</span>
+          </div>
+
+          <div class="clock-chip">
+            <svg class="icon icon-sm" aria-hidden="true"><use href="#i-clock"/></svg>
+            <span id="console-clock" class="tabular">--:--:--</span>
+          </div>
+
+          <button id="fx-toggle" class="icon-chip" title="Chuyển chế độ hiệu ứng đồ họa" aria-label="Hiệu ứng đồ họa: Đầy đủ">
+            <svg class="icon" aria-hidden="true"><use href="#i-sparkle"/></svg>
+            <span id="fx-mode-label" class="chip-text">FX: Đầy đủ</span>
+          </button>
+
+          <button id="theme-toggle" class="icon-chip icon-only" title="Đổi chế độ Sáng / Tối" aria-label="Đổi chế độ Sáng hoặc Tối">
+            <svg class="icon" aria-hidden="true" id="theme-icon"><use href="#i-moon"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Banner Cảnh Báo Trung Thực Dữ Liệu -->
+      <div id="synthetic-banner" class="truth-banner hidden" role="alert">
+        <div class="banner-icon">
+          <svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>
+        </div>
+        <div class="banner-body">
+          <strong id="banner-title">DỮ LIỆU MÔ PHỎNG (SYNTHETIC TELEMETRY)</strong>
+          <span id="banner-desc">Các giá trị đang được tạo tự động để kiểm thử chức năng, không phải số đo vật lý từ cảm biến.</span>
+        </div>
+      </div>
+
+      <!-- Thông báo trạng thái ACK & Lỗi (aria-live) -->
+      <div id="console-notice" class="console-notice hidden" role="status" aria-live="polite"></div>
+
+      <!-- ================= TAB 1: TỔNG QUAN (DASHBOARD) ================= -->
+      <section id="tab-dashboard" class="tab-pane active" aria-labelledby="tab-dashboard">
+        <!-- 4 KPI BENTO CARDS -->
+        <div class="bento-metrics-grid">
+          <!-- KPI 1: Nhiệt độ -->
+          <article class="bento-card kpi-card kpi-temp" id="card-temp">
+            <div class="card-head">
+              <div class="card-tag">
+                <svg class="icon icon-sm" aria-hidden="true"><use href="#i-temp"/></svg>
+                <span>Nhiệt độ không khí</span>
+              </div>
+              <span class="sensor-chip">DHT22</span>
+            </div>
+            <div class="kpi-body">
+              <div class="kpi-digit-row">
+                <span class="kpi-value tabular" id="val-temperature">--</span>
+                <span class="kpi-unit">°C</span>
+              </div>
+              <span class="kpi-trend" id="trend-temperature">→ Ổn định</span>
+            </div>
+            <!-- SVG Arc Gauge với 3 phân vùng ngưỡng: <28 OK (lam), 28-30 cảnh báo (hổ phách), >=30 bật quạt (cam plasma) -->
+            <div class="gauge-container">
+              <svg class="galaxy-gauge" id="svg-gauge-temp" viewBox="0 0 200 110" role="img" aria-label="Đồng hồ đo nhiệt độ 0 đến 60 độ C">
+                <path class="gauge-track" d="M 25 95 A 75 75 0 0 1 175 95"></path>
+                <path class="gauge-zone zone-ok" d="M 25 95 A 75 75 0 0 1 95 24"></path>
+                <path class="gauge-zone zone-warn" d="M 95 24 A 75 75 0 0 1 115 22"></path>
+                <path class="gauge-zone zone-danger" d="M 115 22 A 75 75 0 0 1 175 95"></path>
+                <path class="gauge-progress" id="prog-temp" d="M 25 95 A 75 75 0 0 1 25 95"></path>
+                <line class="gauge-needle" id="needle-temp" x1="100" y1="95" x2="35" y2="95"></line>
+                <circle class="gauge-pivot" cx="100" cy="95" r="5"></circle>
+              </svg>
+            </div>
+            <div class="card-foot">
+              <span>Thang: 0 – 60 °C</span>
+              <span>Ngưỡng: Bật ≥30 / Tắt ≤28</span>
+            </div>
+          </article>
+
+          <!-- KPI 2: Độ ẩm không khí -->
+          <article class="bento-card kpi-card kpi-hum" id="card-hum">
+            <div class="card-head">
+              <div class="card-tag">
+                <svg class="icon icon-sm" aria-hidden="true"><use href="#i-drop"/></svg>
+                <span>Độ ẩm không khí</span>
+              </div>
+              <span class="sensor-chip">DHT22</span>
+            </div>
+            <div class="kpi-body">
+              <div class="kpi-digit-row">
+                <span class="kpi-value tabular" id="val-humidity">--</span>
+                <span class="kpi-unit">%</span>
+              </div>
+              <span class="kpi-trend" id="trend-humidity">→ Ổn định</span>
+            </div>
+            <div class="gauge-container">
+              <svg class="galaxy-gauge" id="svg-gauge-hum" viewBox="0 0 200 110" role="img" aria-label="Đồng hồ đo độ ẩm 0 đến 100 phần trăm">
+                <path class="gauge-track" d="M 25 95 A 75 75 0 0 1 175 95"></path>
+                <path class="gauge-zone zone-ok" d="M 25 95 A 75 75 0 0 1 145 35"></path>
+                <path class="gauge-zone zone-danger" d="M 145 35 A 75 75 0 0 1 175 95"></path>
+                <path class="gauge-progress" id="prog-hum" d="M 25 95 A 75 75 0 0 1 25 95"></path>
+                <line class="gauge-needle" id="needle-hum" x1="100" y1="95" x2="35" y2="95"></line>
+                <circle class="gauge-pivot" cx="100" cy="95" r="5"></circle>
+              </svg>
+            </div>
+            <div class="card-foot">
+              <span>Thang: 0 – 100 %</span>
+              <span>Cảnh báo khi: ≥ 80%</span>
+            </div>
+          </article>
+
+          <!-- KPI 3: Mức khí tương đối (MQ135) -->
+          <article class="bento-card kpi-card kpi-gas" id="card-gas">
+            <div class="card-head">
+              <div class="card-tag">
+                <svg class="icon icon-sm" aria-hidden="true"><use href="#i-gas"/></svg>
+                <span>Mức khí tương đối</span>
+              </div>
+              <span class="sensor-chip">MQ135</span>
+            </div>
+            <div class="kpi-body">
+              <div class="kpi-digit-row">
+                <span class="kpi-value tabular" id="val-airQuality">--</span>
+                <span class="kpi-unit">điểm</span>
+              </div>
+              <span class="kpi-trend" id="trend-airQuality">→ Ổn định</span>
+            </div>
+            <div class="gauge-container">
+              <svg class="galaxy-gauge" id="svg-gauge-gas" viewBox="0 0 200 110" role="img" aria-label="Đồng hồ đo mức khí tương đối 0 đến 100 điểm">
+                <path class="gauge-track" d="M 25 95 A 75 75 0 0 1 175 95"></path>
+                <path class="gauge-zone zone-ok" d="M 25 95 A 75 75 0 0 1 107 21"></path>
+                <path class="gauge-zone zone-warn" d="M 107 21 A 75 75 0 0 1 130 25"></path>
+                <path class="gauge-zone zone-danger" d="M 130 25 A 75 75 0 0 1 175 95"></path>
+                <path class="gauge-progress" id="prog-gas" d="M 25 95 A 75 75 0 0 1 25 95"></path>
+                <line class="gauge-needle" id="needle-gas" x1="100" y1="95" x2="35" y2="95"></line>
+                <circle class="gauge-pivot" cx="100" cy="95" r="5"></circle>
+              </svg>
+            </div>
+            <div class="card-foot">
+              <span>Thang: 0 – 100 điểm</span>
+              <span>Còi báo: Bật ≥70 / Tắt ≤55</span>
+            </div>
+          </article>
+
+          <!-- KPI 4: Ánh sáng tương đối % (LDR) -->
+          <article class="bento-card kpi-card kpi-light" id="card-light">
+            <div class="card-head">
+              <div class="card-tag">
+                <svg class="icon icon-sm" aria-hidden="true"><use href="#i-sun"/></svg>
+                <span>Ánh sáng tương đối %</span>
+              </div>
+              <span class="sensor-chip">LDR</span>
+            </div>
+            <div class="kpi-body">
+              <div class="kpi-digit-row">
+                <span class="kpi-value tabular" id="val-light">--</span>
+                <span class="kpi-unit">%</span>
+              </div>
+              <span class="kpi-trend" id="trend-light">→ Ổn định</span>
+            </div>
+            <div class="gauge-container">
+              <svg class="galaxy-gauge" id="svg-gauge-light" viewBox="0 0 200 110" role="img" aria-label="Đồng hồ đo ánh sáng tương đối 0 đến 100 phần trăm">
+                <path class="gauge-track" d="M 25 95 A 75 75 0 0 1 175 95"></path>
+                <path class="gauge-zone zone-danger" d="M 25 95 A 75 75 0 0 1 65 39"></path>
+                <path class="gauge-zone zone-warn" d="M 65 39 A 75 75 0 0 1 85 27"></path>
+                <path class="gauge-zone zone-ok" d="M 85 27 A 75 75 0 0 1 175 95"></path>
+                <path class="gauge-progress" id="prog-light" d="M 25 95 A 75 75 0 0 1 25 95"></path>
+                <line class="gauge-needle" id="needle-light" x1="100" y1="95" x2="35" y2="95"></line>
+                <circle class="gauge-pivot" cx="100" cy="95" r="5"></circle>
+              </svg>
+            </div>
+            <div class="card-foot">
+              <span>Thang: 0 – 100 %</span>
+              <span>Đèn tự động: Bật ≤25 / Tắt ≥40</span>
+            </div>
+          </article>
+        </div>
+
+        <!-- HÀNG 2: BIỂU ĐỒ QUỸ ĐẠO & ĐIỀU KHIỂN CHẤP HÀNH -->
+        <div class="bento-middle-grid">
+          <!-- Thẻ Biểu Đồ Quỹ Đạo Realtime -->
+          <article class="bento-card chart-bridge-card">
+            <div class="card-head">
+              <div class="card-tag">
+                <svg class="icon icon-sm" aria-hidden="true"><use href="#i-chart"/></svg>
+                <span>Biểu đồ quỹ đạo môi trường (100 điểm)</span>
+              </div>
+              <div class="chart-legend-row" role="toolbar" aria-label="Bộ chọn đường hiển thị">
+                <button type="button" class="legend-chip active legend-temp" data-key="temperature" aria-pressed="true">
+                  <span class="legend-color"></span> Nhiệt độ (°C)
+                </button>
+                <button type="button" class="legend-chip active legend-hum" data-key="humidity" aria-pressed="true">
+                  <span class="legend-color"></span> Độ ẩm (%)
+                </button>
+                <button type="button" class="legend-chip active legend-gas" data-key="airQuality" aria-pressed="true">
+                  <span class="legend-color"></span> Khí tương đối
+                </button>
+                <button type="button" class="legend-chip active legend-light" data-key="light" aria-pressed="true">
+                  <span class="legend-color"></span> Ánh sáng (%)
+                </button>
+              </div>
+            </div>
+            <div class="canvas-chart-wrap">
+              <canvas id="history-chart" class="history-canvas" role="img" aria-label="Biểu đồ tương tác thời gian thực"></canvas>
+            </div>
+            <div class="chart-caption-row">
+              <span class="muted">Trục trái: Mức tỷ lệ 0–100% / điểm &bull; Trục phải: Nhiệt độ 0–60°C</span>
+              <span id="chart-sample-count" class="badge-neutral">0 bản ghi</span>
+            </div>
+          </article>
+
+          <!-- Thẻ Buồng Điều Khiển Thiết Bị Chấp Hành -->
+          <article class="bento-card actuator-bridge-card">
+            <div class="card-head">
+              <div class="card-tag">
+                <svg class="icon icon-sm" aria-hidden="true"><use href="#i-bolt"/></svg>
+                <span>Buồng điều khiển chấp hành</span>
+              </div>
+              <div class="mode-select-wrap">
+                <label for="control-mode" class="visually-hidden">Chế độ vận hành</label>
+                <select id="control-mode" class="galaxy-select sm">
+                  <option value="auto">Chế độ Tự động</option>
+                  <option value="manual">Chế độ Thủ công</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="actuator-list">
+              <!-- Thiết bị 1: Quạt thông gió -->
+              <div class="actuator-row" id="act-row-fan">
+                <div class="act-visual">
+                  <svg class="icon act-anim-fan" aria-hidden="true"><use href="#i-fan"/></svg>
+                </div>
+                <div class="act-info">
+                  <div class="act-name-row">
+                    <strong>Quạt thông gió</strong>
+                    <span class="spec-tag">DC 12V · 1A</span>
+                  </div>
+                  <span class="act-state-label" id="fan-state">Chưa xác nhận</span>
+                </div>
+                <button id="fan-toggle" class="galaxy-toggle" aria-label="Bật hoặc tắt quạt thông gió" aria-pressed="false" disabled>
+                  <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                </button>
+              </div>
+
+              <!-- Thiết bị 2: Đèn phòng -->
+              <div class="actuator-row" id="act-row-led">
+                <div class="act-visual">
+                  <svg class="icon act-anim-led" aria-hidden="true"><use href="#i-bulb"/></svg>
+                </div>
+                <div class="act-info">
+                  <div class="act-name-row">
+                    <strong>Đèn chiếu sáng</strong>
+                    <span class="spec-tag">LED Demo</span>
+                  </div>
+                  <span class="act-state-label" id="led-state">Chưa xác nhận</span>
+                </div>
+                <button id="led-toggle" class="galaxy-toggle" aria-label="Bật hoặc tắt đèn phòng" aria-pressed="false" disabled>
+                  <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                </button>
+              </div>
+
+              <!-- Thiết bị 3: Còi báo động -->
+              <div class="actuator-row" id="act-row-buzzer">
+                <div class="act-visual">
+                  <svg class="icon act-anim-buzzer" aria-hidden="true"><use href="#i-bell"/></svg>
+                </div>
+                <div class="act-info">
+                  <div class="act-name-row">
+                    <strong>Còi báo động</strong>
+                    <span class="spec-tag">Active · Ngắt 10s</span>
+                  </div>
+                  <span class="act-state-label" id="buzzer-state">Chưa xác nhận</span>
+                </div>
+                <button id="buzzer-toggle" class="galaxy-toggle" aria-label="Bật hoặc tắt còi báo động" aria-pressed="false" disabled>
+                  <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Giải thích quy trình điều khiển & ACK -->
+            <div class="actuator-footer">
+              <div class="ack-line" id="ack-indicator">
+                <span class="ack-dot"></span>
+                <span id="ack-text">Trạng thái theo phản hồi từ thiết bị.</span>
+              </div>
+              <p class="control-hint-text" id="control-hint">
+                Chế độ Tự động đang kích hoạt: Khóa thao tác thủ công để đảm bảo quy tắc an toàn.
+              </p>
+            </div>
+          </article>
+        </div>
+
+        <!-- HÀNG 3: RADAR PIR & NHẬT KÝ SỰ KIỆN TRẠM -->
+        <div class="bento-bottom-grid">
+          <!-- Thẻ Radar PIR Sonar -->
+          <article class="bento-card radar-pir-card" id="card-pir">
+            <div class="card-head">
+              <div class="card-tag">
+                <svg class="icon icon-sm" aria-hidden="true"><use href="#i-radar"/></svg>
+                <span>Cảm biến chuyển động PIR</span>
+              </div>
+              <span class="sensor-chip">PIR Sensor</span>
+            </div>
+            <div class="radar-scan-box">
+              <div class="radar-screen">
+                <div class="radar-grid-rings"></div>
+                <div class="radar-scanner" id="radar-sweep"></div>
+                <div class="radar-blip" id="radar-blip"></div>
+              </div>
+              <div class="radar-status-text">
+                <span class="radar-reading" id="motion-status">Chờ dữ liệu...</span>
+                <span class="radar-sub" id="motion-sub">Quét hồng ngoại thụ động thời gian thực</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Thẻ Nhật Ký Sự Kiện Trạm Chỉ Huy (snapshot.events) -->
+          <article class="bento-card events-feed-card">
+            <div class="card-head">
+              <div class="card-tag">
+                <svg class="icon icon-sm" aria-hidden="true"><use href="#i-clock"/></svg>
+                <span>Nhật ký truyền tin trạm (Events Feed)</span>
+              </div>
+              <span class="badge-neutral" id="event-count">0 sự kiện</span>
+            </div>
+            <ul class="event-feed-list" id="event-list">
+              <li class="event-feed-empty">Chờ tín hiệu từ máy chủ...</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <!-- ================= TAB 2: THIẾT BỊ & KẾT NỐI ================= -->
+      <section id="tab-devices" class="tab-pane hidden" aria-labelledby="tab-devices">
+        <div class="bento-card panel-page">
+          <div class="panel-header">
+            <h2>Mạng Lưới Thiết Bị & Kết Nối Trạm</h2>
+            <p class="muted">Quản lý các nút cảm biến (nodes) và thông số kỹ thuật cầu nối Gateway.</p>
+          </div>
+          
+          <div class="network-overview-grid">
+            <div class="sub-glass-card">
+              <span class="spec-label">EDGE GATEWAY</span>
+              <h3 id="gw-name">Edge Gateway</h3>
+              <p class="spec-detail">Giao thức: <strong id="gw-proto">MQTT ↔ HTTP / USB Serial</strong></p>
+              <p class="spec-detail">Cơ sở dữ liệu: <strong id="gw-storage">SQLite WAL</strong></p>
+              <p class="spec-detail">Thời gian hoạt động: <strong id="gw-uptime">0s</strong></p>
+            </div>
+            <div class="sub-glass-card">
+              <span class="spec-label">BROKER MQTT NỘI BỘ</span>
+              <h3>Aedes Embedded Broker</h3>
+              <p class="spec-detail">Cổng kết nối: <strong id="broker-port-info">1883</strong></p>
+              <p class="spec-detail">Trạng thái: <strong class="text-ok">Sẵn sàng nhận kết nối</strong></p>
+              <p class="spec-detail">Chính sách bảo mật: <strong class="text-muted">ACL & Topic Prefix cô lập</strong></p>
+            </div>
+          </div>
+
+          <div class="devices-catalog-header">
+            <h3>Danh Sách Không Gian Giám Sát (Nodes)</h3>
+          </div>
+          <div class="devices-cards-grid" id="devices-catalog-grid">
+            <!-- Được render động từ snapshot.devices -->
+          </div>
+
+          <!-- PHẦN CẤU HÌNH WIFI & KẾT NỐI ESP32 (TỪ BẢN TRƯỚC) -->
+          <div class="wifi-provision-section">
+            <!-- Cột 1: Cấu hình Wi-Fi qua cáp USB -->
+            <div class="sub-glass-card wifi-card">
+              <div class="panel-section-head">
+                <div class="card-tag">
+                  <svg class="icon icon-sm text-primary" aria-hidden="true"><use href="#i-station"/></svg>
+                  <span>CẤU HÌNH WIFI CHO ESP32 QUA CÁP USB</span>
+                </div>
+                <span class="sensor-chip">USB Serial</span>
+              </div>
+              <p class="muted">
+                Cắm cáp USB nối ESP32 vào máy tính laptop, đóng Serial Monitor / gateway USB rồi nhập thông tin Wi-Fi. Mật khẩu được nạp trực tiếp vào ESP32 và không lưu vào cơ sở dữ liệu của máy chủ.
+              </p>
+
+              <form id="wifi-form" class="galaxy-form">
+                <div class="form-row">
+                  <div class="field-item">
+                    <label for="wifi-ssid">Tên Wi-Fi (SSID):</label>
+                    <input type="text" id="wifi-ssid" class="galaxy-input" maxlength="32" required autocomplete="off" placeholder="Tên Wi-Fi gia đình">
+                  </div>
+                  <div class="field-item">
+                    <label for="wifi-pass">Mật khẩu Wi-Fi:</label>
+                    <input type="password" id="wifi-pass" class="galaxy-input" maxlength="64" autocomplete="off" placeholder="Nhập tại đây, không lộ ra ngoài">
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="field-item">
+                    <label for="wifi-broker">IP Laptop chạy MQTT Broker:</label>
+                    <input type="text" id="wifi-broker" class="galaxy-input" required placeholder="Ví dụ: 172.16.0.109">
+                  </div>
+                  <div class="field-item">
+                    <label for="wifi-com">Cổng USB COM:</label>
+                    <input type="text" id="wifi-com" class="galaxy-input" value="COM16" required pattern="COM[0-9]+" placeholder="COM16">
+                  </div>
+                </div>
+
+                <div class="form-row single">
+                  <div class="field-item">
+                    <label for="wifi-device">Gán khu vực cho ESP32:</label>
+                    <select id="wifi-device" class="galaxy-select">
+                      <option value="esp32-room-01">Khu vực 01 · Phòng ngủ (esp32-room-01)</option>
+                      <option value="esp32-room-02">Khu vực 02 · Phòng khách (esp32-room-02)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-actions">
+                  <button type="submit" id="wifi-submit" class="bridge-btn primary">
+                    <svg class="icon icon-sm" aria-hidden="true"><use href="#i-refresh"/></svg>
+                    <span>Lưu Wi-Fi Xuống ESP32</span>
+                  </button>
+                  <span id="wifi-result" role="status" class="wifi-status-text muted">Sau khi lưu, đợi board khởi động và xuất hiện trực tuyến.</span>
+                </div>
+              </form>
+            </div>
+
+            <!-- Cột 2: Thông số kết nối trạm & Wi-Fi Access Point -->
+            <div class="sub-glass-card connection-card">
+              <div class="panel-section-head">
+                <div class="card-tag">
+                  <svg class="icon icon-sm text-primary" aria-hidden="true"><use href="#i-shield"/></svg>
+                  <span>THÔNG SỐ KẾT NỐI TRẠM & WI-FI AP</span>
+                </div>
+                <span class="badge-neutral">Mạng nội bộ</span>
+              </div>
+              
+              <div class="ap-guide-box">
+                <p>
+                  <strong>Kết nối ESP32 qua Wi-Fi AP:</strong> ESP32 tự phát Wi-Fi <code>PhongIoT-Config</code>. Kết nối và mở <code>http://192.168.4.1</code>. Mật khẩu Wi-Fi cấu hình mặc định: <code>phongiot2026</code>.
+                </p>
+              </div>
+
+              <div class="setup-details-wrap">
+                <dl id="setup-details" class="setup-dl"></dl>
+                <button type="button" id="reveal-secrets" class="bridge-btn outline sm full-w">
+                  <svg class="icon icon-sm" aria-hidden="true"><use href="#i-shield"/></svg>
+                  <span>Hiện Thông Tin Kết Nối Trạm</span>
+                </button>
+              </div>
+
+              <div class="gateway-guide-box">
+                <h4>Gateway USB & Ứng Dụng Di Động</h4>
+                <p class="muted">
+                  Thử ngay với ESP32 cắm USB qua file <code>BAT_GATEWAY_USB.cmd</code>. Không cần khai báo mật khẩu Wi-Fi để demo USB.
+                </p>
+                <a href="/downloads/android.apk" class="bridge-btn outline sm full-w">
+                  <svg class="icon icon-sm" aria-hidden="true"><use href="#i-download"/></svg>
+                  <span>Tải File Ứng Dụng Android APK</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 3: TỰ ĐỘNG HÓA ================= -->
+      <section id="tab-rules" class="tab-pane hidden" aria-labelledby="tab-rules">
+        <div class="bento-card panel-page">
+          <div class="panel-header">
+            <h2>Quy Tắc Vận Hành Tự Động (Automation Logic)</h2>
+            <p class="muted">Logic bảo vệ phòng ở và điều khiển thiết bị chấp hành theo chu trình Hysteresis.</p>
+          </div>
+
+          <div class="rules-cards-grid">
+            <!-- Quy tắc 1 -->
+            <div class="rule-card">
+              <div class="rule-badge">LUẬT 01 · THÔNG GIÓ</div>
+              <h3>Điều Khiển Quạt Theo Nhiệt Độ</h3>
+              <p class="rule-desc">
+                &bull; Bật quạt khi nhiệt độ phòng <strong id="rule-desc-tempOn">≥ 30.0 °C</strong>.<br>
+                &bull; Tắt quạt khi nhiệt độ phòng <strong id="rule-desc-tempOff">≤ 28.0 °C</strong>.<br>
+                &bull; Vùng trễ (Hysteresis) chống bật tắt gián đoạn.
+              </p>
+              <span class="rule-status active">Đang hiệu lực trong hệ thống</span>
+            </div>
+
+            <!-- Quy tắc 2 -->
+            <div class="rule-card">
+              <div class="rule-badge">LUẬT 02 · AN TOÀN KHÔNG KHÍ</div>
+              <h3>Báo Động Khí Gas / Khói (MQ135)</h3>
+              <p class="rule-desc">
+                &bull; Bật còi báo động khi mức khí tương đối <strong id="rule-desc-airOn">≥ 70 điểm</strong>.<br>
+                &bull; Tắt còi khi mức khí hạ xuống <strong id="rule-desc-airOff">≤ 55 điểm</strong>.<br>
+                &bull; Cơ chế an toàn: Tự ngắt sau <strong>tối đa 10 giây</strong> để bảo vệ còi.
+              </p>
+              <span class="rule-status active">Đang hiệu lực trong hệ thống</span>
+            </div>
+
+            <!-- Quy tắc 3 -->
+            <div class="rule-card">
+              <div class="rule-badge">LUẬT 03 · TIẾT KIỆM NĂNG LƯỢNG</div>
+              <h3>Chiếu Sáng Theo Hiện Diện & Mức Sáng</h3>
+              <p class="rule-desc">
+                &bull; Bật đèn khi ánh sáng <strong id="rule-desc-lightOn">≤ 25%</strong> VÀ có phát hiện chuyển động PIR.<br>
+                &bull; Tắt đèn khi ánh sáng <strong id="rule-desc-lightOff">≥ 40%</strong> HOẶC không còn chuyển động.
+              </p>
+              <span class="rule-status active">Đang hiệu lực trong hệ thống</span>
+            </div>
+
+            <!-- Quy tắc 4 -->
+            <div class="rule-card">
+              <div class="rule-badge">LUẬT 04 · CẢNH BÁO MÔI TRƯỜNG</div>
+              <h3>Giám Sát Độ Ẩm Cao</h3>
+              <p class="rule-desc">
+                &bull; Phát cảnh báo khi độ ẩm không khí <strong id="rule-desc-humAlert">≥ 80%</strong>.<br>
+                &bull; <em>Ghi chú trung thực:</em> Chỉ phát cảnh báo; không có máy hút ẩm vật lý.
+              </p>
+              <span class="rule-status active">Đang hiệu lực trong hệ thống</span>
+            </div>
+          </div>
+
+          <!-- PHẦN CÀI ĐẶT TỰ ĐỘNG THEO CÁ NHÂN TRÊN WEB (TỪ BẢN TRƯỚC) -->
+          <div class="sub-glass-card custom-rules-box">
+            <div class="panel-section-head">
+              <div class="card-tag">
+                <svg class="icon icon-sm text-primary" aria-hidden="true"><use href="#i-bolt"/></svg>
+                <span>TÙY BIẾN CÀI ĐẶT TỰ ĐỘNG THEO CÁ NHÂN</span>
+              </div>
+              <span class="badge-neutral">Lưu cấu hình trực tiếp vào SQLite</span>
+            </div>
+            <p class="muted">
+              Điều chỉnh các ngưỡng đóng/cắt phù hợp với điều kiện phòng ở và vị trí cảm biến thực tế của bạn. Dữ liệu được lưu trữ an toàn trong SQLite trên máy chủ.
+            </p>
+
+            <form id="rules-form" class="rules-form-grid">
+              <!-- Nhóm 1: Quạt thông gió -->
+              <fieldset class="rule-fieldset">
+                <legend class="fieldset-legend">01 / Thông gió nhiệt độ</legend>
+                <div class="fields-row">
+                  <div class="field-item">
+                    <label for="rule-onTemperature">Bật quạt từ (°C):</label>
+                    <input id="rule-onTemperature" name="onTemperature" type="number" min="1" max="60" step="0.5" class="galaxy-input" required>
+                  </div>
+                  <div class="field-item">
+                    <label for="rule-offTemperature">Tắt quạt dưới (°C):</label>
+                    <input id="rule-offTemperature" name="offTemperature" type="number" min="0" max="59" step="0.5" class="galaxy-input" required>
+                  </div>
+                </div>
+                <span class="field-hint">Ngưỡng bật phải cao hơn ngưỡng tắt để tạo vùng trễ chống gián đoạn.</span>
+              </fieldset>
+
+              <!-- Nhóm 2: Cảnh báo khí gas -->
+              <fieldset class="rule-fieldset">
+                <legend class="fieldset-legend">02 / Cảnh báo mức khí tương đối</legend>
+                <div class="fields-row">
+                  <div class="field-item">
+                    <label for="rule-airQualityOn">Bật còi khi khí ≥ (điểm):</label>
+                    <input id="rule-airQualityOn" name="airQualityOn" type="number" min="0" max="95" step="1" class="galaxy-input" required>
+                  </div>
+                  <div class="field-item">
+                    <label for="rule-airQualityOff">Tắt còi khi khí ≤ (điểm):</label>
+                    <input id="rule-airQualityOff" name="airQualityOff" type="number" min="5" max="100" step="1" class="galaxy-input" required>
+                  </div>
+                </div>
+                <span class="field-hint">MQ135 báo còi cảnh báo khi vượt ngưỡng, tự ngắt tối đa sau 10 giây.</span>
+              </fieldset>
+
+              <!-- Nhóm 3: Chiếu sáng thông minh -->
+              <fieldset class="rule-fieldset">
+                <legend class="fieldset-legend">03 / Chiếu sáng thông minh</legend>
+                <div class="fields-row">
+                  <div class="field-item">
+                    <label for="rule-lightOn">Bật đèn khi ánh sáng ≤ (%):</label>
+                    <input id="rule-lightOn" name="lightOn" type="number" min="0" max="95" step="1" class="galaxy-input" required>
+                  </div>
+                  <div class="field-item">
+                    <label for="rule-lightOff">Tắt đèn khi ánh sáng ≥ (%):</label>
+                    <input id="rule-lightOff" name="lightOff" type="number" min="5" max="100" step="1" class="galaxy-input" required>
+                  </div>
+                </div>
+                <span class="field-hint">Đèn chỉ bật tự động khi phòng tối VÀ phát hiện có người chuyển động.</span>
+              </fieldset>
+
+              <!-- Nhóm 4: Cảnh báo độ ẩm -->
+              <fieldset class="rule-fieldset">
+                <legend class="fieldset-legend">04 / Cảnh báo độ ẩm</legend>
+                <div class="fields-row single">
+                  <div class="field-item">
+                    <label for="rule-humidityAlert">Cảnh báo độ ẩm cao từ (%):</label>
+                    <input id="rule-humidityAlert" name="humidityAlert" type="number" min="1" max="100" step="1" class="galaxy-input" required>
+                  </div>
+                </div>
+                <span class="field-hint">Chỉ phát cảnh báo giao diện; hệ thống không trang bị máy hút ẩm vật lý.</span>
+              </fieldset>
+
+              <div class="rules-form-footer">
+                <button type="submit" id="rules-submit-btn" class="bridge-btn primary">
+                  <svg class="icon icon-sm" aria-hidden="true"><use href="#i-bolt"/></svg>
+                  <span>Lưu Quy Tắc Cá Nhân</span>
+                </button>
+                <span id="rules-save-status" class="save-status-text"></span>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 4: QUỸ ĐẠO LỊCH SỬ ================= -->
+      <section id="tab-history" class="tab-pane hidden" aria-labelledby="tab-history">
+        <div class="bento-card panel-page">
+          <div class="panel-header flex-between">
+            <div>
+              <h2>Quỹ Đạo Dữ Liệu Lưu Trữ (SQLite WAL)</h2>
+              <p class="muted">Truy xuất tối đa 1.000 mẫu gần nhất từ cơ sở dữ liệu trên máy chủ.</p>
+            </div>
+            <div class="panel-actions">
+              <button id="history-refresh-btn" class="bridge-btn outline">
+                <svg class="icon icon-sm" aria-hidden="true"><use href="#i-refresh"/></svg>
+                <span>Làm Mới</span>
+              </button>
+              <button id="history-export-btn" class="bridge-btn primary">
+                <svg class="icon icon-sm" aria-hidden="true"><use href="#i-download"/></svg>
+                <span>Tải File CSV</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="galaxy-table">
+              <thead>
+                <tr>
+                  <th scope="col">Thời Gian Ghi Nhận</th>
+                  <th scope="col">Nhiệt Độ (°C)</th>
+                  <th scope="col">Độ Ẩm (%)</th>
+                  <th scope="col">Khí Tương Đối</th>
+                  <th scope="col">Ánh Sáng (%)</th>
+                  <th scope="col">Chuyển Động PIR</th>
+                </tr>
+              </thead>
+              <tbody id="history-table-body">
+                <tr><td colspan="6" class="table-empty">Đang tải lịch sử môi trường từ máy chủ...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination-bar">
+            <span id="history-page-info" class="muted">Trang 1</span>
+            <div class="page-btn-group">
+              <button id="history-prev-btn" class="bridge-btn outline sm" disabled>Trang trước</button>
+              <button id="history-next-btn" class="bridge-btn outline sm" disabled>Trang sau</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Mobile Bottom Navigation Bar (Cố định phía dưới trên điện thoại) -->
+  <nav class="mobile-bottom-bar" aria-label="Điều hướng nhanh điện thoại">
+    <button class="m-nav-item active" data-tab="dashboard" aria-label="Tổng quan trạm">
+      <svg class="icon" aria-hidden="true"><use href="#i-grid"/></svg>
+      <span>Tổng quan</span>
+    </button>
+    <button class="m-nav-item" data-tab="devices" aria-label="Thiết bị">
+      <svg class="icon" aria-hidden="true"><use href="#i-chip"/></svg>
+      <span>Thiết bị</span>
+    </button>
+    <button class="m-nav-item" data-tab="rules" aria-label="Tự động hóa">
+      <svg class="icon" aria-hidden="true"><use href="#i-bolt"/></svg>
+      <span>Tự động</span>
+    </button>
+    <button class="m-nav-item" data-tab="history" aria-label="Lịch sử">
+      <svg class="icon" aria-hidden="true"><use href="#i-chart"/></svg>
+      <span>Lịch sử</span>
+    </button>
+  </nav>
+
+  <!-- Modal Đăng Nhập Mã Truy Cập Khi Gặp Lỗi 401 -->
+  <div id="auth-modal" class="galaxy-modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-auth-title">
+    <div class="modal-card bento-glass">
+      <div class="modal-head">
+        <svg class="icon icon-lg text-primary" aria-hidden="true"><use href="#i-shield"/></svg>
+        <h3 id="modal-auth-title">Xác Thực Mã Truy Cập Trạm</h3>
+        <p class="muted">Máy chủ yêu cầu xác thực phiên đăng nhập trước khi cấp quyền điều khiển.</p>
+      </div>
+      <form id="auth-form" class="auth-form">
+        <div class="field-wrap">
+          <label for="modal-access-token" class="field-label">Mã truy cập trạm (Access Token):</label>
+          <div class="input-password-wrap">
+            <input type="password" id="modal-access-token" class="galaxy-input" required autocomplete="current-password" placeholder="Nhập mã bảo mật từ máy chủ">
+            <button type="button" id="modal-toggle-token" class="input-toggle-btn">Hiện</button>
+          </div>
+        </div>
+        <p class="auth-error-msg hidden" id="modal-auth-error"></p>
+        <div class="modal-footer">
+          <button type="submit" class="bridge-btn primary full-w">Xác Thực & Kết Nối</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="galaxy-toast hidden" role="alert" aria-live="assertive"></div>
+</body>
+</html>
