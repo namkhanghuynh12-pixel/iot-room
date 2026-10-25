@@ -92,14 +92,14 @@ simulator = startSimulator({ port: mqttPort, username: 'simulator', password: se
 secondSimulator = startSimulator({ port: mqttPort, username: 'simulator', password: secrets.simulation, id:'sim-room-02',onChange:broadcast });
 if (settings.source !== 'simulation') { simulator.configure({ enabled: false }); secondSimulator.configure({enabled:false}); }
 
-const mime = { '.html':'text/html; charset=utf-8', '.css':'text/css; charset=utf-8', '.js':'text/javascript; charset=utf-8', '.svg':'image/svg+xml', '.webmanifest':'application/manifest+json' };
+const mime = { '.html':'text/html; charset=utf-8', '.css':'text/css; charset=utf-8', '.js':'text/javascript; charset=utf-8', '.mp4':'video/mp4', '.jpg':'image/jpeg', '.svg':'image/svg+xml', '.webmanifest':'application/manifest+json' };
 const addresses = Object.entries(os.networkInterfaces()).sort(([a],[b])=>Number(/wi-fi|wlan/i.test(b))-Number(/wi-fi|wlan/i.test(a))).flatMap(([,values])=>values).filter(x=>x?.family==='IPv4' && !x.internal).map(x=>x.address);
 const allowedHosts = new Set([`localhost:${port}`, `127.0.0.1:${port}`, ...addresses.map(x=>`${x}:${port}`)]);
 function json(res, body, status = 200) { res.writeHead(status, { 'Content-Type':'application/json; charset=utf-8', 'Cache-Control':'no-store' }); res.end(JSON.stringify(body)); }
 async function body(req) { let b = ''; for await (const c of req) { b += c; if (b.length > 8192) throw Error('Yêu cầu quá lớn'); } return JSON.parse(b || '{}'); }
 const server = http.createServer(async (req,res) => {
   res.setHeader('X-Content-Type-Options', 'nosniff'); res.setHeader('Referrer-Policy','same-origin');
-  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; frame-ancestors 'none'");
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; media-src 'self'; frame-ancestors 'none'");
   const isAllowedHost = allowedHosts.has(req.headers.host) || process.env.RENDER || req.headers.host?.endsWith('.onrender.com') || req.headers.host?.includes('render.com');
   const originValid = !req.headers.origin || req.headers.origin === `http://${req.headers.host}` || req.headers.origin === `https://${req.headers.host}`;
   if (!isAllowedHost || !originValid) return json(res,{ error:'Địa chỉ truy cập không hợp lệ' },403);
@@ -163,9 +163,29 @@ const server = http.createServer(async (req,res) => {
       const result = (settings.hardwareId.endsWith('02')?secondSimulator:simulator).configure(await body(req)); broadcast(); return json(res,result);
     }
     if (req.method !== 'GET') return json(res,{error:'Không tìm thấy'},404);
-    const files = { '/':'index.html', '/app.js':'app.js', '/style.css':'style.css', '/manifest.webmanifest':'manifest.webmanifest', '/sw.js':'sw.js', '/icon.svg':'icon.svg' };
+    const files = { '/':'index.html', '/app.js':'app.js', '/style.css':'style.css', '/manifest.webmanifest':'manifest.webmanifest', '/sw.js':'sw.js', '/icon.svg':'icon.svg', '/ui-state.js':'ui-state.js', '/bg.mp4':'bg.mp4', '/poster.jpg':'poster.jpg' };
     const file = files[url.pathname]; if (!file) return json(res,{error:'Không tìm thấy'},404);
-    res.writeHead(200, { 'Content-Type':mime[path.extname(file)], 'Cache-Control':'no-cache' }); res.end(fs.readFileSync(path.join(root,'public',file)));
+    const assetPath = path.join(root, 'public', file);
+    const size = fs.statSync(assetPath).size;
+    const headers = { 'Content-Type':mime[path.extname(file)], 'Cache-Control':'no-cache' };
+    if (file === 'bg.mp4') {
+      headers['Accept-Ranges'] = 'bytes';
+      const range = req.headers.range;
+      if (range) {
+        const match = /^bytes=(\d*)-(\d*)$/.exec(range);
+        let start, end;
+        if (match && (match[1] || match[2])) {
+          start = match[1] ? Number(match[1]) : Math.max(0, size - Number(match[2]));
+          end = match[1] && match[2] ? Math.min(Number(match[2]), size - 1) : size - 1;
+        }
+        if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start < 0 || start >= size || end < start) {
+          res.writeHead(416, { ...headers, 'Content-Range':`bytes */${size}`, 'Content-Length':0 }); return res.end();
+        }
+        res.writeHead(206, { ...headers, 'Content-Range':`bytes ${start}-${end}/${size}`, 'Content-Length':end-start+1 });
+        return fs.createReadStream(assetPath, { start, end }).pipe(res);
+      }
+    }
+    res.writeHead(200, { ...headers, 'Content-Length':size }); fs.createReadStream(assetPath).pipe(res);
   } catch (err) { json(res,{error:err.message},400); }
 });
 await new Promise((resolve,reject) => { server.once('error',reject); server.listen(port,'0.0.0.0',resolve); });

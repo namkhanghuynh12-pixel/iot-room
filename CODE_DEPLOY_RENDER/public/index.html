@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#05060f">
-  <meta name="description" content="Đài chỉ huy Phòng IoT — Giám sát và điều khiển phòng ở thông minh Galaxy">
-  <title>Trạm Chỉ Huy · Phòng IoT</title>
+  <meta name="theme-color" content="#110d21">
+  <meta name="description" content="Phòng IoT — Không gian thông minh, cảm hứng anime">
+  <title>Phòng IoT · Anime Room</title>
   <link rel="stylesheet" href="/style.css">
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="icon" href="/icon.svg">
-  <script src="/app.js" defer></script>
+  <script type="module" src="/app.js"></script>
 </head>
 <body class="loading">
   <!-- SVG Symbols Sprite nội bộ (không tải từ CDN ngoài) -->
@@ -70,13 +70,13 @@
     </symbol>
   </svg>
 
-  <!-- Lớp Canvas Sao Parallax 3 tầng & Tinh vân Galaxy -->
-  <div class="galaxy-viewport" aria-hidden="true">
-    <canvas id="starfield-canvas" class="starfield-canvas"></canvas>
-    <div class="nebula-spot nebula-1"></div>
-    <div class="nebula-spot nebula-2"></div>
-    <div class="nebula-spot nebula-3"></div>
+  <div class="anime-backdrop" aria-hidden="true">
+    <video id="room-background" muted loop playsinline preload="auto" poster="/poster.jpg">
+      <source src="/bg.mp4" type="video/mp4">
+    </video>
+    <div class="anime-veil"></div>
   </div>
+  <a class="skip-link" href="#main-content">Đến nội dung chính</a>
 
   <div class="app-shell">
     <!-- Sidebar Trạm Chỉ Huy -->
@@ -86,8 +86,8 @@
           <svg class="icon icon-lg" aria-hidden="true"><use href="#i-station"/></svg>
         </div>
         <div class="brand-text">
-          <span class="brand-title">ĐÀI CHỈ HUY</span>
-          <span class="brand-sub">PHÒNG IoT GALAXY</span>
+          <span class="brand-title">PHÒNG IoT</span>
+          <span class="brand-sub">KHÔNG GIAN CỦA BẠN</span>
         </div>
       </div>
 
@@ -106,7 +106,7 @@
         </button>
         <button class="nav-item" data-tab="history" aria-current="false">
           <svg class="icon" aria-hidden="true"><use href="#i-chart"/></svg>
-          <span>Quỹ đạo Lịch sử</span>
+          <span>Lịch sử dữ liệu</span>
         </button>
       </nav>
 
@@ -180,6 +180,16 @@
         </div>
       </header>
 
+      <section class="anime-hero" aria-labelledby="room-title">
+        <div class="hero-art-space" aria-hidden="true"><span class="art-caption">ARKNIGHTS × MUSE DASH</span></div>
+        <div class="hero-copy">
+          <span class="hero-eyebrow">KHÔNG GIAN NHỎ · KẾT NỐI LỚN</span>
+          <h1 id="room-title">Căn phòng của bạn.<br><em>Thông minh hơn mỗi ngày.</em></h1>
+          <p>Nhiệt độ, ánh sáng và những chuyển động nhỏ — mọi thứ trong tầm tay.</p>
+          <div class="hero-tags"><span>ESP32-C5</span><span>MQTT</span><span id="hero-data-label">Đang kết nối máy chủ</span></div>
+        </div>
+      </section>
+
       <!-- Banner Cảnh Báo Trung Thực Dữ Liệu -->
       <div id="synthetic-banner" class="truth-banner hidden" role="alert">
         <div class="banner-icon">
@@ -228,7 +238,7 @@
             </div>
             <div class="card-foot">
               <span>Thang: 0 – 60 °C</span>
-              <span>Ngưỡng: Bật ≥30 / Tắt ≤28</span>
+              <span id="gauge-temp-threshold">Bật ≥30 / Tắt ≤28</span>
             </div>
           </article>
 
@@ -260,7 +270,7 @@
             </div>
             <div class="card-foot">
               <span>Thang: 0 – 100 %</span>
-              <span>Cảnh báo khi: ≥ 80%</span>
+              <span id="gauge-hum-threshold">Cảnh báo ≥80%</span>
             </div>
           </article>
 
@@ -293,7 +303,32 @@
             </div>
             <div class="card-foot">
               <span>Thang: 0 – 100 %</span>
-              <span>Đèn tự động: Bật ≤25 / Tắt ≥40</span>
+              <span id="gauge-light-threshold">Bật ≤25 / Tắt ≥40</span>
+            </div>
+          </article>
+          <article class="bento-card radar-pir-card" id="card-pir">
+            <div class="card-head">
+              <div class="card-tag">
+                <svg class="icon icon-sm" aria-hidden="true"><use href="#i-radar"/></svg>
+                <span>Cảm biến chuyển động PIR</span>
+              </div>
+              <span class="sensor-chip">PIR Sensor</span>
+            </div>
+            <div class="radar-scan-box">
+              <div class="radar-screen">
+                <svg class="pir-gauge" viewBox="0 0 120 120" role="img" aria-label="Trạng thái PIR: chưa có dữ liệu" id="svg-gauge-pir">
+                  <circle class="pir-ring-track" cx="60" cy="60" r="48"/>
+                  <circle class="pir-ring-state" cx="60" cy="60" r="48"/>
+                  <path d="M12 60h96M60 12v96" class="pir-cross"/>
+                  <circle cx="60" cy="60" r="27" class="pir-cross"/>
+                </svg>
+                <div class="radar-scanner" id="radar-sweep"></div>
+                <div class="radar-blip" id="radar-blip"></div>
+              </div>
+              <div class="radar-status-text">
+                <span class="radar-reading" id="motion-status">Chờ dữ liệu...</span>
+                <span class="radar-sub" id="motion-sub">Quét hồng ngoại thụ động thời gian thực</span>
+              </div>
             </div>
           </article>
         </div>
@@ -305,7 +340,7 @@
             <div class="card-head">
               <div class="card-tag">
                 <svg class="icon icon-sm" aria-hidden="true"><use href="#i-chart"/></svg>
-                <span>Biểu đồ quỹ đạo môi trường (100 điểm)</span>
+                <span>Nhịp sống căn phòng</span>
               </div>
               <div class="chart-legend-row" role="toolbar" aria-label="Bộ chọn đường hiển thị">
                 <button type="button" class="legend-chip active legend-temp" data-key="temperature" aria-pressed="true">
@@ -323,7 +358,7 @@
               <canvas id="history-chart" class="history-canvas" role="img" aria-label="Biểu đồ tương tác thời gian thực"></canvas>
             </div>
             <div class="chart-caption-row">
-              <span class="muted">Trục trái: Mức tỷ lệ 0–100% / điểm &bull; Trục phải: Nhiệt độ 0–60°C</span>
+              <span class="muted">Trục trái: Độ ẩm, ánh sáng 0–100% &bull; Trục phải: Nhiệt độ 0–60°C</span>
               <span id="chart-sample-count" class="badge-neutral">0 bản ghi</span>
             </div>
           </article>
@@ -333,7 +368,7 @@
             <div class="card-head">
               <div class="card-tag">
                 <svg class="icon icon-sm" aria-hidden="true"><use href="#i-bolt"/></svg>
-                <span>Buồng điều khiển chấp hành</span>
+                <span>Điều khiển thiết bị</span>
               </div>
               <div class="mode-select-wrap">
                 <label for="control-mode" class="visually-hidden">Chế độ vận hành</label>
@@ -413,33 +448,14 @@
         <!-- HÀNG 3: RADAR PIR & NHẬT KÝ SỰ KIỆN TRẠM -->
         <div class="bento-bottom-grid">
           <!-- Thẻ Radar PIR Sonar -->
-          <article class="bento-card radar-pir-card" id="card-pir">
-            <div class="card-head">
-              <div class="card-tag">
-                <svg class="icon icon-sm" aria-hidden="true"><use href="#i-radar"/></svg>
-                <span>Cảm biến chuyển động PIR</span>
-              </div>
-              <span class="sensor-chip">PIR Sensor</span>
-            </div>
-            <div class="radar-scan-box">
-              <div class="radar-screen">
-                <div class="radar-grid-rings"></div>
-                <div class="radar-scanner" id="radar-sweep"></div>
-                <div class="radar-blip" id="radar-blip"></div>
-              </div>
-              <div class="radar-status-text">
-                <span class="radar-reading" id="motion-status">Chờ dữ liệu...</span>
-                <span class="radar-sub" id="motion-sub">Quét hồng ngoại thụ động thời gian thực</span>
-              </div>
-            </div>
-          </article>
+
 
           <!-- Thẻ Nhật Ký Sự Kiện Trạm Chỉ Huy (snapshot.events) -->
           <article class="bento-card events-feed-card">
             <div class="card-head">
               <div class="card-tag">
                 <svg class="icon icon-sm" aria-hidden="true"><use href="#i-clock"/></svg>
-                <span>Nhật ký truyền tin trạm (Events Feed)</span>
+                <span>Nhật ký hoạt động</span>
               </div>
               <span class="badge-neutral" id="event-count">0 sự kiện</span>
             </div>

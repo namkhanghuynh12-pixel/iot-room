@@ -1,3 +1,4 @@
+import { matchesCommandAck, arcPath, shouldReduceVideo } from './ui-state.js';
 /**
  * ============================================================================
  * TRẠM CHỈ HUY PHÒNG IOT - GALAXY SPACESHIP BRIDGE CONTROLLER
@@ -117,7 +118,7 @@
   // --------------------------------------------------------------------------
   // GIAO TIẾP MÁY CHỦ API (FETCH SAFE WRAPPER)
   // --------------------------------------------------------------------------
-  async function api(url, data) {
+  async function api(url, data, signal) {
     const opts = data === undefined ? {} : {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -126,7 +127,7 @@
 
     let res;
     try {
-      res = await fetch(url, opts);
+      res = await fetch(url, { ...opts, signal });
     } catch {
       throw new Error('Mất kết nối máy chủ hoặc mạng nội bộ gián đoạn');
     }
@@ -147,253 +148,51 @@
   // --------------------------------------------------------------------------
   // 1. ENGINE CANVAS SAO VŨ TRỤ PARALLAX & SAO BĂNG (GALAXY STARFIELD)
   // --------------------------------------------------------------------------
-  class StarfieldEngine {
-    constructor(canvasId) {
-      this.canvas = $(canvasId);
-      if (!this.canvas) return;
-      this.ctx = this.canvas.getContext('2d');
-      this.stars = [];
-      this.shootingStars = [];
-      this.starCount = 140;
-      this.width = window.innerWidth;
-      this.height = window.innerHeight;
-      this.dpr = Math.min(window.devicePixelRatio || 1, 2);
-      this.mouseX = 0;
-      this.mouseY = 0;
-      this.targetMouseX = 0;
-      this.targetMouseY = 0;
-      this.rafId = null;
-      this.lastTime = performance.now();
-      this.nextShootingStarTime = performance.now() + 5000;
-      this.fpsFrames = 0;
-      this.fpsStartTime = performance.now();
-      this.fpsBenchmarkDone = false;
-
-      this.initStars();
-      this.bindEvents();
-      this.resize();
-    }
-
-    initStars() {
-      this.stars = [];
-      for (let i = 0; i < this.starCount; i++) {
-        this.stars.push({
-          x: Math.random() * this.width,
-          y: Math.random() * this.height,
-          radius: Math.random() * 1.5 + 0.4,
-          layer: Math.floor(Math.random() * 3) + 1, // 1: xa, 2: vừa, 3: gần
-          alpha: Math.random() * 0.7 + 0.3,
-          baseAlpha: Math.random() * 0.7 + 0.3,
-          twinkleSpeed: Math.random() * 0.03 + 0.01,
-          twinkleDir: Math.random() > 0.5 ? 1 : -1,
-          color: this.randomStarColor()
-        });
-      }
-    }
-
-    randomStarColor() {
-      const colors = ['#ffffff', '#e0e7ff', '#a5b4fc', '#67e8f9', '#fbcfe8'];
-      return colors[Math.floor(Math.random() * colors.length)];
-    }
-
-    bindEvents() {
-      window.addEventListener('resize', () => this.resize(), { passive: true });
-
-      // Parallax chuột (chỉ chạy khi chế độ FX full và không phải mobile)
-      window.addEventListener('mousemove', e => {
-        if (appState.fxMode !== 'full' || window.innerWidth < 768) return;
-        this.targetMouseX = (e.clientX - this.width / 2) * 0.025;
-        this.targetMouseY = (e.clientY - this.height / 2) * 0.025;
-      }, { passive: true });
-
-      // Tạm dừng khi tab ẩn để tiết kiệm pin/CPU
-      document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-          this.stop();
-        } else {
-          this.start();
-        }
-      });
-    }
-
-    resize() {
-      this.width = window.innerWidth;
-      this.height = window.innerHeight;
-      this.canvas.width = Math.floor(this.width * this.dpr);
-      this.canvas.height = Math.floor(this.height * this.dpr);
-      this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-    }
-
-    spawnShootingStar() {
-      if (appState.fxMode !== 'full') return;
-      // Tránh rơi trực tiếp lên khu vực trung tâm thẻ KPI
-      const startX = Math.random() * (this.width * 0.8) + this.width * 0.1;
-      const startY = Math.random() * (this.height * 0.3);
-      const angle = (Math.PI / 4) + (Math.random() * 0.2 - 0.1); // ~45 độ
-      const speed = Math.random() * 6 + 7;
-      const length = Math.random() * 80 + 70;
-
-      this.shootingStars.push({
-        x: startX,
-        y: startY,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        length,
-        life: 1.0,
-        decay: Math.random() * 0.012 + 0.015
-      });
-
-      // Lần xuất hiện tiếp theo: ngẫu nhiên 7 - 12 giây
-      this.nextShootingStarTime = performance.now() + (Math.random() * 5000 + 7000);
-    }
-
-    start() {
-      if (this.rafId) return;
-      this.lastTime = performance.now();
-      const loop = now => {
-        this.update(now);
-        this.draw();
-        this.rafId = requestAnimationFrame(loop);
-      };
-      this.rafId = requestAnimationFrame(loop);
-    }
-
-    stop() {
-      if (this.rafId) {
-        cancelAnimationFrame(this.rafId);
-        this.rafId = null;
-      }
-    }
-
-    update(now) {
-      // Benchmark FPS trong 3 giây đầu tiên
-      if (!this.fpsBenchmarkDone) {
-        this.fpsFrames++;
-        const elapsed = now - this.fpsStartTime;
-        if (elapsed >= 3000) {
-          const fps = (this.fpsFrames / elapsed) * 1000;
-          this.fpsBenchmarkDone = true;
-          // Nếu FPS < 30 hoặc người dùng bật prefers-reduced-motion -> chuyển sang "reduced"
-          if (fps < 30 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-            setFxMode('reduced');
-            toast('Đã tự động tối ưu sang Hiệu ứng Giảm để đạt độ mượt trên thiết bị.');
-          }
-        }
-      }
-
-      if (appState.fxMode === 'off') return;
-
-      // Làm mượt dịch chuyển chuột (lerp)
-      this.mouseX += (this.targetMouseX - this.mouseX) * 0.05;
-      this.mouseY += (this.targetMouseY - this.mouseY) * 0.05;
-
-      // Cập nhật các ngôi sao
-      for (const s of this.stars) {
-        if (appState.fxMode === 'full') {
-          // Trôi chậm theo layer
-          s.y -= s.layer * 0.12;
-          if (s.y < 0) {
-            s.y = this.height;
-            s.x = Math.random() * this.width;
-          }
-        }
-
-        // Nhấp nháy nhẹ
-        s.alpha += s.twinkleSpeed * s.twinkleDir;
-        if (s.alpha > s.baseAlpha + 0.25) {
-          s.alpha = s.baseAlpha + 0.25;
-          s.twinkleDir = -1;
-        } else if (s.alpha < s.baseAlpha - 0.25) {
-          s.alpha = s.baseAlpha - 0.25;
-          s.twinkleDir = 1;
-        }
-      }
-
-      // Sao băng (chỉ ở full FX)
-      if (appState.fxMode === 'full') {
-        if (now > this.nextShootingStarTime) {
-          this.spawnShootingStar();
-        }
-
-        for (let i = this.shootingStars.length - 1; i >= 0; i--) {
-          const ss = this.shootingStars[i];
-          ss.x += ss.vx;
-          ss.y += ss.vy;
-          ss.life -= ss.decay;
-          if (ss.life <= 0 || ss.x > this.width + 100 || ss.y > this.height + 100) {
-            this.shootingStars.splice(i, 1);
-          }
-        }
-      }
-    }
-
-    draw() {
-      this.ctx.clearRect(0, 0, this.width, this.height);
-
-      if (appState.fxMode === 'off') return;
-
-      // Vẽ các vì sao
-      for (const s of this.stars) {
-        let drawX = s.x;
-        let drawY = s.y;
-
-        if (appState.fxMode === 'full') {
-          // Parallax dịch chuyển theo layer
-          drawX += this.mouseX * (s.layer * 0.4);
-          drawY += this.mouseY * (s.layer * 0.4);
-        }
-
-        this.ctx.fillStyle = s.color;
-        this.ctx.globalAlpha = clamp(s.alpha, 0.1, 1.0);
-        this.ctx.beginPath();
-        this.ctx.arc(drawX, drawY, s.radius, 0, Math.PI * 2);
-        this.ctx.fill();
-      }
-
-      // Vẽ sao băng
-      if (appState.fxMode === 'full') {
-        for (const ss of this.shootingStars) {
-          const tailX = ss.x - ss.vx * (ss.length / 8);
-          const tailY = ss.y - ss.vy * (ss.length / 8);
-
-          const grad = this.ctx.createLinearGradient(ss.x, ss.y, tailX, tailY);
-          grad.addColorStop(0, `rgba(255, 255, 255, ${ss.life})`);
-          grad.addColorStop(0.3, `rgba(0, 245, 212, ${ss.life * 0.7})`);
-          grad.addColorStop(1, 'rgba(179, 136, 255, 0)');
-
-          this.ctx.strokeStyle = grad;
-          this.ctx.lineWidth = 1.5;
-          this.ctx.beginPath();
-          this.ctx.moveTo(ss.x, ss.y);
-          this.ctx.lineTo(tailX, tailY);
-          this.ctx.stroke();
-
-          // Đầu phát sáng của sao băng
-          this.ctx.fillStyle = `rgba(255, 255, 255, ${ss.life})`;
-          this.ctx.beginPath();
-          this.ctx.arc(ss.x, ss.y, 1.5, 0, Math.PI * 2);
-          this.ctx.fill();
-        }
-      }
-
-      this.ctx.globalAlpha = 1.0;
-    }
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  let videoQualityBaseline = null;
+  let videoPlayAttempt = 0;
+  function syncBackgroundVideo() {
+    const video = $('room-background');
+    if (!video) return;
+    const allowed = !document.hidden && appState.fxMode === 'full' && !reducedMotion.matches;
+    const attempt = ++videoPlayAttempt;
+    videoQualityBaseline = null;
+    if (!allowed) { video.pause(); return; }
+    video.muted = true;
+    video.play().then(() => {
+      if (attempt !== videoPlayAttempt || document.hidden || appState.fxMode !== 'full' || reducedMotion.matches) video.pause();
+      else if (video.getVideoPlaybackQuality) videoQualityBaseline = video.getVideoPlaybackQuality();
+    }).catch(() => { /* Poster remains visible if playback is unavailable. */ });
   }
+  document.addEventListener('visibilitychange', syncBackgroundVideo);
+  reducedMotion.addEventListener('change', () => {
+    if (reducedMotion.matches && appState.fxMode === 'full') setFxMode('reduced');
+    else syncBackgroundVideo();
+  });
+  setInterval(() => {
+    const video = $('room-background');
+    if (!video || video.paused || !video.getVideoPlaybackQuality || !videoQualityBaseline) return;
+    const current = video.getVideoPlaybackQuality();
+    if (shouldReduceVideo(videoQualityBaseline, current)) {
+      setFxMode('reduced');
+      toast('Đã giảm hiệu ứng vì video rơi hơn 30% khung hình.');
+    } else if (current.totalVideoFrames - videoQualityBaseline.totalVideoFrames >= 60) videoQualityBaseline = current;
+  }, 5000);
 
-  // --------------------------------------------------------------------------
-  // 2. BỘ ĐIỀU KHIỂN CHẾ ĐỘ HIỆU ỨNG (FX CONTROLLER) & GIAO DIỆN SÁNG/TỐI
-  // --------------------------------------------------------------------------
   function setFxMode(mode) {
+    if (!['full', 'reduced', 'off'].includes(mode)) mode = 'full';
+    if (reducedMotion.matches && mode === 'full') mode = 'reduced';
     appState.fxMode = mode;
     localStorage.setItem('galaxy_fx', mode);
     document.documentElement.dataset.fx = mode;
+    syncBackgroundVideo();
 
     const label = $('fx-mode-label');
     const btn = $('fx-toggle');
     if (label) {
-      if (mode === 'full') label.textContent = 'FX: Đầy đủ';
-      else if (mode === 'reduced') label.textContent = 'FX: Giảm';
-      else label.textContent = 'FX: Tắt';
+      if (mode === 'full') label.textContent = 'Hiệu ứng: Đầy đủ';
+      else if (mode === 'reduced') label.textContent = 'Hiệu ứng: Giảm';
+      else label.textContent = 'Hiệu ứng: Tắt';
     }
     if (btn) {
       btn.setAttribute('aria-label', `Hiệu ứng đồ họa: ${mode === 'full' ? 'Đầy đủ' : mode === 'reduced' ? 'Giảm' : 'Tắt'}`);
@@ -404,7 +203,7 @@
     const modes = ['full', 'reduced', 'off'];
     const nextIdx = (modes.indexOf(appState.fxMode) + 1) % modes.length;
     setFxMode(modes[nextIdx]);
-    toast(`Đã chuyển hiệu ứng: ${modes[nextIdx] === 'full' ? 'Đầy đủ' : modes[nextIdx] === 'reduced' ? 'Giảm (Tiết kiệm GPU)' : 'Tắt hoàn toàn'}`);
+    toast(`Đã chuyển hiệu ứng: ${appState.fxMode === 'full' ? 'Đầy đủ' : appState.fxMode === 'reduced' ? 'Giảm (tôn trọng tùy chọn giảm chuyển động)' : 'Tắt hoàn toàn'}`);
   }
 
   function setTheme(theme) {
@@ -419,14 +218,15 @@
     }
     const btn = $('theme-toggle');
     if (btn) {
-      btn.setAttribute('aria-label', `Đang ở chế độ ${theme === 'dark' ? 'Vũ trụ Tối' : 'Bình minh Sáng'}. Nhấn để đổi.`);
+      btn.setAttribute('aria-label', `Đang ở chế độ ${theme === 'dark' ? 'Anime tối' : 'Anime sáng'}. Nhấn để đổi.`);
     }
+    window.chartEngine?.render();
   }
 
   function toggleTheme() {
     const newTheme = appState.theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
-    toast(`Đã chuyển sang giao diện ${newTheme === 'dark' ? 'Vũ Trụ Tối (Dark)' : 'Bình Minh Không Gian (Light)'}`);
+    toast(`Đã chuyển sang giao diện ${newTheme === 'dark' ? 'Anime tối' : 'Anime sáng'}`);
   }
 
   // --------------------------------------------------------------------------
@@ -434,13 +234,33 @@
   // --------------------------------------------------------------------------
   // Tâm đồng hồ: (100, 95), Bán kính r = 75.
   // Thang đo chạy từ góc 180 độ (bên trái, x=25, y=95) sang góc 0 độ (bên phải, x=175, y=95).
+  function updateGaugeZones(settings) {
+    const zones = (key, bounds, max, colors) => {
+      const svg = $(`svg-gauge-${key}`);
+      if (!svg) return;
+      svg.querySelectorAll('.gauge-zone').forEach(node => node.remove());
+      for (let i = 0; i < bounds.length - 1; i++) {
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('class', `gauge-zone zone-${colors[i]}`);
+        path.setAttribute('d', arcPath(bounds[i], bounds[i+1], max));
+        svg.insertBefore(path, svg.querySelector('.gauge-progress'));
+      }
+    };
+    zones('temp', [0, settings.offTemperature, settings.onTemperature, 60], 60, ['ok','warn','danger']);
+    zones('hum', [0, settings.humidityAlert, 100], 100, ['ok','danger']);
+    zones('light', [0, settings.lightOn, settings.lightOff, 100], 100, ['danger','warn','ok']);
+    $('gauge-temp-threshold').textContent = `Bật ≥${settings.onTemperature} / Tắt ≤${settings.offTemperature}`;
+    $('gauge-hum-threshold').textContent = `Cảnh báo ≥${settings.humidityAlert}%`;
+    $('gauge-light-threshold').textContent = `Bật ≤${settings.lightOn} / Tắt ≥${settings.lightOff}`;
+  }
+
   function updateSvgGauge(gaugeKey, value, min, max) {
     const needle = $(`needle-${gaugeKey}`);
     const prog = $(`prog-${gaugeKey}`);
     if (!needle || !prog) return;
 
     if (value == null || isNaN(value)) {
-      needle.style.transform = 'rotate(0deg)';
+
       needle.setAttribute('transform', 'rotate(0 100 95)');
       prog.setAttribute('d', 'M 25 95 A 75 75 0 0 1 25 95');
       return;
@@ -451,7 +271,7 @@
     // Tính góc kim: từ 0 độ (trái) tới 180 độ (phải)
     // Đường thẳng ban đầu x1=100, y1=95, x2=35, y2=95 chỉ sang trái (0 độ)
     const angleDeg = ratio * 180;
-    needle.style.transform = `rotate(${angleDeg.toFixed(2)}deg)`;
+
     needle.setAttribute('transform', `rotate(${angleDeg.toFixed(2)} 100 95)`);
 
     // Tính tọa độ điểm mút của cung tiến độ (Arc Progress Path)
@@ -477,7 +297,7 @@
     }
 
     // Nếu là lần render đầu tiên hoặc chế độ FX tắt, hiển thị ngay giá trị đích
-    if (appState.fxMode === 'off' || !appState.displayedValues[key]) {
+    if (appState.fxMode !== 'full' || !appState.displayedValues[key]) {
       el.textContent = targetValue.toFixed(decimals);
       appState.displayedValues[key] = targetValue;
       return;
@@ -583,7 +403,7 @@
     }
 
     handleHover(mouseX) {
-      const data = appState.historyData;
+      const data = appState.historyData.slice(-100);
       if (!data || data.length < 2) return;
 
       const padLeft = 44;
@@ -616,7 +436,11 @@
       // 1. Vẽ các đường lưới tọa độ ngang (5 vạch)
       const isDark = appState.theme === 'dark';
       const gridColor = isDark ? 'rgba(255, 255, 255, 0.07)' : 'rgba(0, 0, 0, 0.08)';
-      const textColor = isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(20, 20, 30, 0.6)';
+      const palette = getComputedStyle(document.documentElement);
+      const textColor = palette.getPropertyValue('--gx-text-secondary').trim();
+      this.seriesMeta.temperature.color = palette.getPropertyValue('--gx-metric-temp').trim();
+      this.seriesMeta.humidity.color = palette.getPropertyValue('--gx-metric-hum').trim();
+      this.seriesMeta.light.color = palette.getPropertyValue('--gx-metric-light').trim();
 
       ctx.lineWidth = 1;
       ctx.font = '10px monospace';
@@ -642,7 +466,7 @@
         ctx.fillText(`${rightVal}°C`, w - padRight + 6, y);
       }
 
-      const data = appState.historyData;
+      const data = appState.historyData.slice(-100);
       if (!data || data.length === 0) {
         ctx.fillStyle = textColor;
         ctx.textAlign = 'center';
@@ -656,7 +480,7 @@
       if (countEl) countEl.textContent = `${data.length} bản ghi`;
 
       // 2. Vẽ 4 đường quỹ đạo cảm biến
-      const getX = index => padLeft + (index / (data.length - 1)) * plotW;
+      const getX = index => padLeft + (index / Math.max(1, data.length - 1)) * plotW;
       const getY = (val, axis) => {
         if (val == null || isNaN(val)) return null;
         const max = axis === 'right' ? 60 : 100;
@@ -791,10 +615,10 @@
   // - Quá 3000ms không nhận được ACK: Báo lỗi quá hạn 3s, rung đỏ, hoàn nguyên giao diện.
   async function sendActuatorCommand(type, targetValue) {
     const snap = appState.snapshot;
-    if (!snap) return;
+    if (!snap || Object.values(appState.pendingCommands).some(Boolean)) return;
 
     const device = snap.device;
-    if (!device || !device.online) {
+    if (!device || !device.online || !appState.sseConnected) {
       toast('Thiết bị đang ngoại tuyến. Không thể chuyển giao lệnh.');
       showConsoleNotice('Thiết bị đang ngoại tuyến: Vui lòng kiểm tra kết nối MQTT/ESP32.', 'error');
       return;
@@ -812,6 +636,7 @@
     const toggleBtn = $(`${type}-toggle`);
 
     if (row) row.classList.add('act-pending');
+    for (const key of ['fan', 'led', 'buzzer']) $(`${key}-toggle`)?.setAttribute('disabled', '');
     if (stateLabel) stateLabel.textContent = 'Đang gửi lệnh...';
     if (toggleBtn) toggleBtn.setAttribute('disabled', 'true');
 
@@ -822,6 +647,7 @@
     if (type === 'buzzer') patch.manualBuzzer = targetValue;
 
     const startTime = Date.now();
+    const controller = new AbortController();
 
     // Hủy bỏ bộ hẹn giờ cũ nếu có
     if (appState.pendingCommands[type]?.timer) {
@@ -834,19 +660,26 @@
     }, 3000);
 
     appState.pendingCommands[type] = {
-      targetValue,
+      type, targetValue, deviceId: device.id, commandId: null, controller,
       startTime,
       timer
     };
 
     try {
-      await api('/api/settings', patch);
-      // HTTP 200 đã hoàn tất; tiếp tục đợi gói phản hồi thật từ thiết bị qua SSE
+      const result = await api('/api/settings', patch, controller.signal);
+      const pending = appState.pendingCommands[type];
+      if (!pending || pending.startTime !== startTime) return;
+      if (result.device?.id !== pending.deviceId || !result.device?.lastCommand) throw Error('Máy chủ chưa tạo mã lệnh cho thiết bị đã chọn');
+      pending.commandId = result.device.lastCommand;
+      if (stateLabel) stateLabel.textContent = `Chờ ACK · ${pending.commandId.slice(0, 8)}`;
+      if (appState.snapshot) renderSnapshot(appState.snapshot);
+      // HTTP response supplies the commandId; only an acknowledged snapshot completes it.
     } catch (err) {
+      if (controller.signal.aborted) return;
       clearTimeout(timer);
       appState.pendingCommands[type] = null;
       if (row) row.classList.remove('act-pending');
-      if (toggleBtn) toggleBtn.removeAttribute('disabled');
+      if (appState.snapshot) renderSnapshot(appState.snapshot);
       toast(err.message);
       showConsoleNotice(`Lỗi gửi lệnh: ${err.message}`, 'error');
     }
@@ -867,7 +700,7 @@
       row.classList.add('ack-success');
       setTimeout(() => row.classList.remove('ack-success'), 1200);
     }
-    if (toggleBtn && appState.snapshot?.settings?.mode === 'manual') {
+    if (toggleBtn && appState.snapshot?.settings?.mode === 'manual' && appState.snapshot?.device?.online && appState.sseConnected) {
       toggleBtn.removeAttribute('disabled');
     }
     if (ackIndicator) {
@@ -876,9 +709,11 @@
     toast(`Đã xác nhận phản hồi ACK từ thiết bị (${type})`);
   }
 
-  function handleAckTimeout(type) {
+  function handleAckTimeout(type, reason) {
     const pending = appState.pendingCommands[type];
     if (!pending) return;
+    clearTimeout(pending.timer);
+    pending.controller.abort();
     appState.pendingCommands[type] = null;
 
     const row = $(`act-row-${type}`);
@@ -890,7 +725,7 @@
       row.classList.add('ack-error');
       setTimeout(() => row.classList.remove('ack-error'), 1800);
     }
-    if (toggleBtn && appState.snapshot?.settings?.mode === 'manual') {
+    if (toggleBtn && appState.snapshot?.settings?.mode === 'manual' && appState.snapshot?.device?.online && appState.sseConnected) {
       toggleBtn.removeAttribute('disabled');
     }
 
@@ -901,8 +736,9 @@
     }
 
     const name = type === 'fan' ? 'Quạt' : type === 'led' ? 'Đèn' : 'Còi';
-    showConsoleNotice(`Quá hạn 3 giây: Thiết bị không phản hồi ACK cho ${name}. Trạng thái giữ nguyên.`, 'error');
-    toast(`Cảnh báo: ${name} không gửi ACK sau 3 giây!`);
+    showConsoleNotice(reason || `Quá hạn 3 giây: Chưa nhận ACK khớp mã lệnh cho ${name}. Chưa xác nhận thiết bị đã thực hiện lệnh.`, 'error');
+    toast(reason || `Cảnh báo: ${name} không gửi ACK sau 3 giây!`);
+    if (appState.snapshot) renderSnapshot(appState.snapshot);
   }
 
   // --------------------------------------------------------------------------
@@ -910,7 +746,13 @@
   // --------------------------------------------------------------------------
   function renderSnapshot(snap) {
     if (!snap) return;
+    const oldDevice = appState.snapshot?.device?.id;
     appState.snapshot = snap;
+    if (oldDevice && oldDevice !== snap.device?.id) {
+      appState.historyData = []; appState.historyPage = 1;
+      for (const type of ['fan', 'led', 'buzzer']) if (appState.pendingCommands[type]) handleAckTimeout(type, 'Đã đổi phòng; ngừng chờ ACK của phòng trước.');
+      loadHistoryData();
+    }
 
     // 1. Cập nhật đồng hồ trạm
     const clockEl = $('console-clock');
@@ -922,7 +764,7 @@
     const connPulse = $('connection-pulse');
     const connCore = $('connection-core');
     const connText = $('connection-text');
-    const isOnline = Boolean(snap.device?.online);
+    const isOnline = Boolean(snap.device?.online && appState.sseConnected);
 
     if (connPulse && connCore && connText) {
       if (!appState.sseConnected) {
@@ -979,6 +821,9 @@
     const d = snap.device || {};
 
     // 6.1 Nhiệt độ (0 - 60 °C, bật >=30, tắt <=28)
+    updateGaugeZones(snap.settings);
+    const dataLabel = $('hero-data-label');
+    if (dataLabel) dataLabel.textContent = snap.settings.source === 'simulation' || d.synthetic ? 'Dữ liệu mô phỏng' : 'Dữ liệu từ ESP32';
     const curTemp = d.temperature;
     animateKpiNumber('temperature', curTemp, 1);
     updateTrendBadge('temperature', curTemp);
@@ -988,7 +833,7 @@
     // Hiệu ứng cảnh báo rung đập thẻ khi vượt ngưỡng nguy hiểm
     const cardTemp = $('card-temp');
     if (cardTemp) {
-      cardTemp.classList.toggle('danger-pulse', curTemp >= 30);
+      cardTemp.classList.toggle('danger-pulse', curTemp != null && isOnline && curTemp >= snap.settings.onTemperature);
     }
 
     // 6.2 Độ ẩm (0 - 100 %, cảnh báo >=80%)
@@ -1000,7 +845,7 @@
 
     const cardHum = $('card-hum');
     if (cardHum) {
-      cardHum.classList.toggle('danger-pulse', curHum >= 80);
+      cardHum.classList.toggle('danger-pulse', curHum != null && isOnline && curHum >= snap.settings.humidityAlert);
     }
 
     // 6.4 Ánh sáng tương đối % (LDR: 0 - 100 %, bật <=25, tắt >=40)
@@ -1011,6 +856,8 @@
     appState.prevValues.light = curLight;
 
     // 7. Thẻ Radar Sonar PIR
+    $('card-pir')?.classList.toggle('detected', isOnline && d.motion === true);
+    $('svg-gauge-pir')?.setAttribute('aria-label', `Trạng thái PIR: ${!isOnline || d.motion == null ? 'chưa có dữ liệu' : d.motion ? 'có chuyển động' : 'không có chuyển động'}`);
     const radarBlip = $('radar-blip');
     const motionStatus = $('motion-status');
     const motionSub = $('motion-sub');
@@ -1048,9 +895,10 @@
       const stateLabel = $(`${type}-state`);
       const toggleBtn = $(`${type}-toggle`);
       const pending = appState.pendingCommands[type];
+      if (row) row.classList.toggle(actClass, Boolean(realState && isOnline));
 
       // Nếu đang đợi ACK và trạng thái đã khớp với targetValue
-      if (pending && realState === pending.targetValue && d.acknowledged) {
+      if (matchesCommandAck(pending, d)) {
         handleAckSuccess(type);
       }
 
@@ -1070,7 +918,7 @@
           toggleBtn.setAttribute('aria-pressed', String(Boolean(realState)));
           toggleBtn.classList.toggle('active', Boolean(realState));
 
-          if (!isOnline || !isManual) {
+          if (!isOnline || !isManual || !appState.sseConnected || Object.values(appState.pendingCommands).some(Boolean)) {
             toggleBtn.setAttribute('disabled', 'true');
           } else {
             toggleBtn.removeAttribute('disabled');
@@ -1112,6 +960,10 @@
 
   function renderRulesSettings(settings) {
     if (!settings) return;
+    $$('.rule-status').forEach(el => {
+      el.classList.toggle('active', settings.mode === 'auto');
+      el.textContent = settings.mode === 'auto' ? 'Áp dụng trong chế độ tự động' : 'Tạm dừng trong chế độ thủ công';
+    });
 
     // Cập nhật giá trị hiển thị trong 3 thẻ quy tắc mô tả
     const setVal = (id, text) => {
@@ -1142,7 +994,7 @@
     if (!list) return;
 
     if (!events || events.length === 0) {
-      list.innerHTML = '';
+      list.replaceChildren();
       const li = document.createElement('li');
       li.className = 'event-feed-empty';
       li.textContent = 'Chưa có sự kiện nào được ghi nhận từ trạm.';
@@ -1152,7 +1004,7 @@
     }
 
     if (count) count.textContent = `${events.length} sự kiện`;
-    list.innerHTML = '';
+    list.replaceChildren();
 
     events.forEach(ev => {
       const li = document.createElement('li');
@@ -1197,7 +1049,7 @@
     if (sidebarPort && snap.broker?.port) sidebarPort.textContent = `:${snap.broker.port}`;
 
     const devices = snap.devices || [];
-    grid.innerHTML = '';
+    grid.replaceChildren();
 
     devices.forEach(dev => {
       const card = document.createElement('div');
@@ -1241,9 +1093,13 @@
   // --------------------------------------------------------------------------
   // 7. TRUY XUẤT LỊCH SỬ & PHÂN TRANG (HISTORY TABLE & PAGINATION)
   // --------------------------------------------------------------------------
+  let historyRequest = 0;
   async function loadHistoryData() {
+    const request = ++historyRequest;
+    const deviceId = appState.snapshot?.device?.id;
     try {
       const history = await api('/api/history');
+      if (request !== historyRequest || deviceId !== appState.snapshot?.device?.id) return;
       if (Array.isArray(history)) {
         appState.historyData = history;
         if (window.chartEngine) window.chartEngine.render();
@@ -1263,7 +1119,12 @@
 
     const data = appState.historyData || [];
     if (data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" class="table-empty">Chưa có dữ liệu lịch sử trong cơ sở dữ liệu.</td></tr>';
+      tbody.replaceChildren();
+      const emptyRow = document.createElement('tr');
+      const emptyCell = document.createElement('td');
+      emptyCell.colSpan = 5; emptyCell.className = 'table-empty';
+      emptyCell.textContent = 'Chưa có dữ liệu lịch sử trong cơ sở dữ liệu.';
+      emptyRow.appendChild(emptyCell); tbody.appendChild(emptyRow);
       if (pageInfo) pageInfo.textContent = 'Trang 1 / 1 (0 bản ghi)';
       if (prevBtn) prevBtn.disabled = true;
       if (nextBtn) nextBtn.disabled = true;
@@ -1279,7 +1140,7 @@
     const reversed = [...data].reverse();
     const pageItems = reversed.slice(startIdx, endIdx);
 
-    tbody.innerHTML = '';
+    tbody.replaceChildren();
     pageItems.forEach(row => {
       const tr = document.createElement('tr');
 
@@ -1296,7 +1157,7 @@
       tdLight.textContent = row.light != null ? Number(row.light).toFixed(0) : '--';
 
       const tdMotion = document.createElement('td');
-      tdMotion.textContent = row.motion === true ? 'Có' : row.motion === false ? 'Không' : '--';
+      tdMotion.textContent = row.motion === true || row.motion === 1 ? 'Có' : row.motion === false || row.motion === 0 ? 'Không' : '--';
 
       tr.appendChild(tdTime);
       tr.appendChild(tdTemp);
@@ -1374,6 +1235,7 @@
       const snap = await api('/api/status');
       renderSnapshot(snap);
       document.body.classList.remove('loading');
+      loadHistoryData();
     } catch (err) {
       console.warn('Lỗi lấy snapshot ban đầu:', err.message);
     }
@@ -1643,7 +1505,7 @@
           const p = await api('/api/setup');
           const dl = $('setup-details');
           if (!dl) return;
-          dl.innerHTML = '';
+          dl.replaceChildren();
           const map = {
             'IP Laptop (Gateway)': p.addresses?.join(', ') || '127.0.0.1',
             'Cổng MQTT': String(p.mqttPort || 1883),
@@ -1726,8 +1588,7 @@
     setFxMode(appState.fxMode);
 
     // Khởi tạo Canvas Vũ trụ Starfield
-    window.starfieldEngine = new StarfieldEngine('starfield-canvas');
-    if (window.starfieldEngine) window.starfieldEngine.start();
+    // Background playback is managed by visibility, FX preference and frame quality.
 
     // Khởi tạo Canvas Biểu đồ 2 trục
     window.chartEngine = new GalaxyChartEngine('history-chart');
@@ -1735,10 +1596,11 @@
     // Thiết lập sự kiện người dùng
     setupEventListeners();
 
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+
     // Lấy snapshot ban đầu và kết nối SSE Realtime
     fetchInitialStatus();
     connectEventSource();
-    loadHistoryData();
     loadSetupDefaults();
 
     // Hỗ trợ mở trực tiếp tab qua URL hash (ví dụ: #devices, #rules, #history)

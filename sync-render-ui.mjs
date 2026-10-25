@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
-const names = ['index.html', 'app.js', 'style.css', 'icon.svg', 'manifest.webmanifest', 'sw.js'];
+const names = ['index.html', 'app.js', 'style.css', 'icon.svg', 'manifest.webmanifest', 'sw.js', 'ui-state.js', 'bg.mp4', 'poster.jpg'];
 const target = join(root, 'CODE_DEPLOY_RENDER', 'public');
 if (!existsSync(target)) throw Error('Không tìm thấy CODE_DEPLOY_RENDER/public');
 for (const name of names) {

@@ -1,18 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
   <defs>
     <linearGradient id="cosmic-bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#05060f"/>
+      <stop offset="0%" stop-color="#110d21"/>
       <stop offset="50%" stop-color="#120b2e"/>
       <stop offset="100%" stop-color="#1c1145"/>
     </linearGradient>
     <linearGradient id="neon-glow" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#00f5d4"/>
-      <stop offset="100%" stop-color="#b388ff"/>
+      <stop offset="0%" stop-color="#ffa4d6"/>
+      <stop offset="100%" stop-color="#72e9f1"/>
     </linearGradient>
   </defs>
   <rect width="192" height="192" rx="42" fill="url(#cosmic-bg)" stroke="url(#neon-glow)" stroke-width="4"/>
   <path d="M96 36 L148 64 L96 92 L44 64 Z" fill="none" stroke="url(#neon-glow)" stroke-width="8" stroke-linejoin="round"/>
-  <path d="M44 96 L96 124 L148 96" fill="none" stroke="#00f5d4" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M44 128 L96 156 L148 128" fill="none" stroke="#b388ff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="96" cy="64" r="6" fill="#00f5d4"/>
+  <path d="M44 96 L96 124 L148 96" fill="none" stroke="#ffa4d6" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M44 128 L96 156 L148 128" fill="none" stroke="#72e9f1" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="96" cy="64" r="6" fill="#ffa4d6"/>
 </svg>

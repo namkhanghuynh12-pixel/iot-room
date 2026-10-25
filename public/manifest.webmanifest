@@ -1,12 +1,12 @@
 {
-  "name": "Trạm Chỉ Huy · Phòng IoT Galaxy",
+  "name": "Phòng IoT · Anime Room",
   "short_name": "Phòng IoT",
   "lang": "vi",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#05060f",
-  "theme_color": "#05060f",
+  "background_color": "#110d21",
+  "theme_color": "#110d21",
   "icons": [
     {
       "src": "/icon.svg",

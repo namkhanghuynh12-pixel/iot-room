@@ -30,6 +30,15 @@ test('MQTT, controls, two nodes, SQL persistence and access checks',{timeout:600
   r=await fetch(base+'/api/settings',{method:'POST',headers:{'Content-Type':'application/json',Origin:'https://evil.invalid'},body:'{}'});assert.equal(r.status,403);
   r=await fetch(base+'/api/export');assert.match(await r.text(),/temperature_c/);
   r=await fetch(base+'/manifest.webmanifest');assert.equal(r.status,200);
+  r=await fetch(base+'/');assert.match(r.headers.get('content-security-policy'),/media-src 'self'/);
+  const page=await r.text();assert.doesNotMatch(page,/<script(?![^>]*src=)|<style|\sstyle=|\sonclick=/i);
+  r=await fetch(base+'/ui-state.js');assert.match(r.headers.get('content-type'),/javascript/);
+  r=await fetch(base+'/bg.mp4',{headers:{Range:'bytes=0-31'}});
+  assert.equal(r.status,206);assert.equal((await r.arrayBuffer()).byteLength,32);assert.match(r.headers.get('content-range'),/^bytes 0-31\//);
+  r=await fetch(base+'/bg.mp4',{headers:{Range:'bytes=-16'}});assert.equal(r.status,206);assert.equal((await r.arrayBuffer()).byteLength,16);
+  r=await fetch(base+'/bg.mp4',{headers:{Range:'bytes=999999999-'}});assert.equal(r.status,416);
+  r=await fetch(base+'/bg.mp4',{headers:{Range:'bytes=10-5'}});assert.equal(r.status,416);
+  r=await fetch(base+'/poster.jpg');assert.equal(r.status,200);assert.match(r.headers.get('content-type'),/image\/jpeg/);
   const secret=JSON.parse(readFileSync(join(data,'credentials.json')));
   const hw=await mqtt.connectAsync(`mqtt://127.0.0.1:${mqttPort}`,{clientId:'esp32-room-01',protocolVersion:4,username:'esp32',password:secret.hardware,reconnectPeriod:0});
   await api('/api/settings',{source:'hardware',mode:'auto'});
