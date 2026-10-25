@@ -1,0 +1,1 @@
+{"name":"iot-room","version":"1.0.0","private":true,"type":"module","scripts":{"start":"node server.mjs","test":"node --test tests/*.test.mjs"},"engines":{"node":">=22.13"},"dependencies":{"aedes":"^1.2.0","mqtt":"^5.16.1","serialport":"^13.0.0","ws":"^8.22.0"}}
