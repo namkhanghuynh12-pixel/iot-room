@@ -51,6 +51,11 @@ export function gatewayReleaseTarget(port,deviceId,controlPort){
   const roomPort=deviceId==='esp32-room-01'?18766:deviceId==='esp32-room-02'?18767:null;
   return controlPort===roomPort?{}:{port};
 }
+export function serialBuildMode(port){
+  if(port?.vendorId?.toLowerCase()==='303a')return {cdc:'cdc',label:'USB tích hợp (CDC)'};
+  if(['1a86','10c4','0403'].includes(port?.vendorId?.toLowerCase()))return {cdc:'default',label:'USB–UART (CH340/CP210/FTDI)'};
+  throw Error('Chưa nhận diện được loại USB của cổng này; không tự chọn luồng Serial.');
+}
 
 export class FirmwareManager {
   constructor({root,dataDir,secrets,onPrepare,onConnected,isAcknowledged}){
@@ -120,10 +125,12 @@ export class FirmwareManager {
     this.phase('release','Đóng gateway cũ của phòng đã chọn và gateway đang giữ cổng USB');await this.releaseGateway(port,deviceId);
     this.phase('detect','Nhận diện chip và Flash; giữ BOOT nếu board dừng ở Connecting');
     const chip=parseChip(await this.run(this.esptool,['--port',port,'flash-id']));Object.assign(this.job,chip);
+    const serial=serialBuildMode((await SerialPort.list()).find(p=>p.path.toUpperCase()===port.toUpperCase()));
+    this.job.serialMode=serial.label;
     const config=this.configureToolchain();
-    const fqbn=`esp32:esp32:esp32c5:FlashSize=${chip.flashMB}M,PSRAM=disabled,CDCOnBoot=cdc,PartitionScheme=${chip.flashMB>=8?'default_8MB':'default'}`;
+    const fqbn=`esp32:esp32:esp32c5:FlashSize=${chip.flashMB}M,PSRAM=disabled,CDCOnBoot=${serial.cdc},PartitionScheme=${chip.flashMB>=8?'default_8MB':'default'}`;
     const sketch=path.join(this.root,'firmware/room_monitor'),build=path.join(this.dataDir,'build-firmware-web');fs.mkdirSync(build,{recursive:true});
-    this.phase('compile','Biên dịch code đồ án và xác định chính xác vùng Flash sẽ ghi; PSRAM tắt');
+    this.phase('compile',`Biên dịch cho ${serial.label}; PSRAM tắt, xác định vùng Flash sẽ ghi`);
     await this.run(this.cli,['--config-file',config,'compile','--fqbn',fqbn,'--build-path',build,sketch],600000);
     // Use the compiler's actual addresses, and only write these explicitly backed-up ranges.
     const {segments,affectedBytes}=readFlashPlan(build,chip.flashMB*1048576);

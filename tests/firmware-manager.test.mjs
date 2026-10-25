@@ -3,7 +3,14 @@ import assert from 'node:assert/strict';
 import {mkdtempSync,writeFileSync} from 'node:fs';
 import {join} from 'node:path';
 import {tmpdir} from 'node:os';
-import {validateFlashRequest,parseChip,assertSameBoard,readFlashPlan,gatewayReleaseTarget} from '../firmware-manager.mjs';
+import {validateFlashRequest,parseChip,assertSameBoard,readFlashPlan,gatewayReleaseTarget,serialBuildMode} from '../firmware-manager.mjs';
+
+test('CH340 uses UART Serial while native Espressif USB uses CDC',()=>{
+  assert.equal(serialBuildMode({vendorId:'1A86'}).cdc,'default');
+  assert.equal(serialBuildMode({vendorId:'10C4'}).cdc,'default');
+  assert.equal(serialBuildMode({vendorId:'303A'}).cdc,'cdc');
+  assert.throws(()=>serialBuildMode({vendorId:'unknown'}));
+});
 
 test('replacing COM16 with COM18 releases the old room gateway while preserving the other room',()=>{
   assert.deepEqual(gatewayReleaseTarget('COM18','esp32-room-01',18766),{});
