@@ -3,7 +3,14 @@ import assert from 'node:assert/strict';
 import {mkdtempSync,writeFileSync} from 'node:fs';
 import {join} from 'node:path';
 import {tmpdir} from 'node:os';
-import {validateFlashRequest,parseChip,assertSameBoard,readFlashPlan} from '../firmware-manager.mjs';
+import {validateFlashRequest,parseChip,assertSameBoard,readFlashPlan,gatewayReleaseTarget} from '../firmware-manager.mjs';
+
+test('replacing COM16 with COM18 releases the old room gateway while preserving the other room',()=>{
+  assert.deepEqual(gatewayReleaseTarget('COM18','esp32-room-01',18766),{});
+  assert.deepEqual(gatewayReleaseTarget('COM18','esp32-room-01',18767),{port:'COM18'});
+  assert.deepEqual(gatewayReleaseTarget('COM16','esp32-room-02',18767),{});
+  assert.deepEqual(gatewayReleaseTarget('COM16','esp32-room-02',18766),{port:'COM16'});
+});
 
 test('flashing accepts only present COM ports and known device IDs',()=>{
   const ports=[{path:'COM16'}];

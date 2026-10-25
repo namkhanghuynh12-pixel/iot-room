@@ -46,6 +46,11 @@ export function readFlashPlan(build,flashBytes){
   return {segments,affectedBytes};
 }
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+export function gatewayReleaseTarget(port,deviceId,controlPort){
+  // A room ID has one gateway even when its replacement board has another COM port.
+  const roomPort=deviceId==='esp32-room-01'?18766:deviceId==='esp32-room-02'?18767:null;
+  return controlPort===roomPort?{}:{port};
+}
 
 export class FirmwareManager {
   constructor({root,dataDir,secrets,onPrepare,onConnected,isAcknowledged}){
@@ -81,12 +86,12 @@ export class FirmwareManager {
       child.on('close',code=>{clearTimeout(timer);this.children.delete(child);if(pending)this.log(pending);if(expired)return reject(Error('Công cụ quá thời gian chờ. Kiểm tra cáp USB/BOOT và thử lại.'));if(code!==0)return reject(Error('Công cụ nạp báo lỗi. Đóng Serial Monitor, kiểm tra cáp và giữ BOOT khi Connecting. Xem nhật ký bên dưới.'));resolve(output);});
     });
   }
-  async releaseGateway(port){
+  async releaseGateway(port,deviceId){
     const release=controlPort=>new Promise(resolve=>{
       const socket=net.connect(controlPort,'127.0.0.1');let data='';let done=false;
       const finish=()=>{if(done)return;done=true;socket.destroy();resolve();};
       socket.setTimeout(1200,finish);socket.on('error',finish);socket.on('close',finish);
-      socket.on('connect',()=>socket.write(JSON.stringify({action:'release',port,token:this.secrets.hardware})+'\n'));
+      socket.on('connect',()=>socket.write(JSON.stringify({action:'release',...gatewayReleaseTarget(port,deviceId,controlPort),token:this.secrets.hardware})+'\n'));
       socket.on('data',chunk=>{data+=chunk.toString();if(data.includes('\n'))finish();});
     });
     await Promise.all([release(18766),release(18767)]);await sleep(900);
@@ -112,7 +117,7 @@ export class FirmwareManager {
   }
   async execute({port,deviceId,backupMode}){
     await this.onPrepare(deviceId);
-    this.phase('release','Đóng gateway USB đang dùng đúng cổng đã chọn');await this.releaseGateway(port);
+    this.phase('release','Đóng gateway cũ của phòng đã chọn và gateway đang giữ cổng USB');await this.releaseGateway(port,deviceId);
     this.phase('detect','Nhận diện chip và Flash; giữ BOOT nếu board dừng ở Connecting');
     const chip=parseChip(await this.run(this.esptool,['--port',port,'flash-id']));Object.assign(this.job,chip);
     const config=this.configureToolchain();
