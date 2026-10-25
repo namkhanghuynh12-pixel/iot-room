@@ -1,4 +1,4 @@
-const CACHE = 'phong-iot-anime-v2';
+const CACHE = 'phong-iot-anime-v3-usb-flash';
 const ASSETS = ['/', '/app.js', '/ui-state.js', '/style.css', '/icon.svg', '/manifest.webmanifest', '/poster.jpg', '/bg.mp4'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting()));

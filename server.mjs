@@ -11,6 +11,7 @@ import { SerialPort } from 'serialport';
 import { execFileSync } from 'node:child_process';
 import { defaults, validateSettings, validateTelemetry, nextOutputs } from './logic.mjs';
 import { startSimulator } from './simulator.mjs';
+import { FirmwareManager } from './firmware-manager.mjs';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const dataDir = process.env.IOT_DATA_DIR || path.join(root, 'data'); fs.mkdirSync(dataDir, { recursive: true });
@@ -92,6 +93,15 @@ simulator = startSimulator({ port: mqttPort, username: 'simulator', password: se
 secondSimulator = startSimulator({ port: mqttPort, username: 'simulator', password: secrets.simulation, id:'sim-room-02',onChange:broadcast });
 if (settings.source !== 'simulation') { simulator.configure({ enabled: false }); secondSimulator.configure({enabled:false}); }
 
+function selectUsbHardware(deviceId){
+  settings={...settings,source:'hardware',hardwareId:deviceId,mode:'manual',manualFan:false,manualBuzzer:false,led:false};saveSettings();
+  simulator.configure({enabled:false});secondSimulator.configure({enabled:false});
+  for(const d of devices.values())publishCommand(d,true);broadcast();
+}
+const firmware=new FirmwareManager({root,dataDir,secrets,onPrepare:selectUsbHardware,onConnected:selectUsbHardware,
+  isAcknowledged:(id,since)=>{const d=dev(id);return d.online&&Date.parse(d.at)>since&&d.lastSent>=since&&d.acknowledged&&d.fan===false&&d.led===false&&d.buzzer===false;}
+});
+
 const mime = { '.html':'text/html; charset=utf-8', '.css':'text/css; charset=utf-8', '.js':'text/javascript; charset=utf-8', '.mp4':'video/mp4', '.jpg':'image/jpeg', '.svg':'image/svg+xml', '.webmanifest':'application/manifest+json' };
 const addresses = Object.entries(os.networkInterfaces()).sort(([a],[b])=>Number(/wi-fi|wlan/i.test(b))-Number(/wi-fi|wlan/i.test(a))).flatMap(([,values])=>values).filter(x=>x?.family==='IPv4' && !x.internal).map(x=>x.address);
 const allowedHosts = new Set([`localhost:${port}`, `127.0.0.1:${port}`, ...addresses.map(x=>`${x}:${port}`)]);
@@ -109,6 +119,17 @@ const server = http.createServer(async (req,res) => {
     const token = req.headers.authorization?.replace(/^Bearer /,'') || req.headers.cookie?.match(/(?:^|;\s*)iot_session=([a-f0-9]+)/)?.[1];
     if (req.method === 'POST' && url.pathname === '/api/login') { const p = await body(req); if (!equal(p.token,secrets.accessToken)) return json(res,{error:'Mã truy cập không đúng'},401); res.setHeader('Set-Cookie',`iot_session=${secrets.accessToken}; HttpOnly; SameSite=Strict; Path=/; Max-Age=86400`); return json(res,{ok:true}); }
     if (url.pathname.startsWith('/api/') && url.pathname !== '/api/health' && !local && !equal(token,secrets.accessToken)) return json(res,{error:'Vui lòng đăng nhập bằng mã truy cập trên laptop'},401);
+    const localFirmware=local&&!process.env.RENDER&&[`localhost:${port}`,`127.0.0.1:${port}`].includes(req.headers.host);
+    if(req.method==='GET' && url.pathname==='/api/firmware/status')return json(res,localFirmware?firmware.status():{available:false,message:'Mở http://localhost:8765 trên laptop để nạp qua USB.',job:null});
+    if(url.pathname==='/api/firmware/ports'&&req.method==='GET'){
+      if(!localFirmware)return json(res,{error:'Chỉ quét USB từ localhost trên laptop'},403);
+      return json(res,{ports:(await SerialPort.list()).map(p=>({path:p.path,label:p.friendlyName||p.manufacturer||p.path,vendorId:p.vendorId,productId:p.productId}))});
+    }
+    if(url.pathname==='/api/firmware/flash'&&req.method==='POST'){
+      if(!localFirmware)return json(res,{error:'Chỉ nạp ESP32 từ localhost trên laptop'},403);
+      try{return json(res,await firmware.start(await body(req)),202);}catch(error){return json(res,{error:error.message},firmware.busy()?409:400);}
+    }
+    if(firmware.busy()&&req.method==='POST'&&['/api/settings','/api/provision','/api/shutdown'].includes(url.pathname))return json(res,{error:'Đang nạp firmware. Đợi hoàn tất trước khi điều khiển/cấu hình hoặc tắt máy chủ.'},409);
     if(req.method==='POST' && url.pathname==='/api/shutdown' && local){json(res,{ok:true});setTimeout(stop,100);return;}
     if(req.method==='POST' && url.pathname==='/api/provision'){
       if(!local)return json(res,{error:'Chỉ cấu hình USB trên laptop máy chủ'},403);

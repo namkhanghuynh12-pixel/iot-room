@@ -1985,3 +1985,20 @@ html[data-fx="reduced"] *, html[data-fx="off"] * { animation: none !important; t
   .anime-backdrop video { object-position: 37% center; }
 }
 @media (max-width: 359px) { .bento-metrics-grid { grid-template-columns: 1fr; } }
+.firmware-card{margin:24px 0;padding:22px;border-color:var(--gx-accent-glow)}
+.firmware-card h3{font:inherit;font-weight:800;margin:0}
+.firmware-fields{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+.firmware-fields .field-item{display:flex;flex-direction:column;gap:8px}
+.firmware-fields select{width:100%;min-width:0}
+.firmware-help{color:var(--gx-text-secondary);font-size:12px;line-height:1.8;margin:14px 0}
+.firmware-backup-field{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.firmware-actions{display:flex;gap:12px;flex-wrap:wrap}
+.firmware-status{margin-top:20px;padding:15px;border:1px solid var(--gx-glass-border);border-radius:8px;background:var(--gx-space-bridge)}
+.firmware-status strong{color:var(--gx-accent-glow)}
+.firmware-status p{font-size:12px;line-height:1.8;margin-top:6px;overflow-wrap:anywhere}
+.firmware-status progress{display:block;width:100%;height:12px;margin-top:12px;accent-color:var(--gx-accent-primary)}
+.firmware-status progress[hidden]{display:none}
+.firmware-log-details{margin-top:14px;color:var(--gx-text-secondary);font-size:12px}
+.firmware-log-details summary{cursor:pointer;padding:8px 0}
+#firmware-log{max-height:260px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;padding:14px;background:var(--gx-space-bridge);color:var(--gx-text-secondary);border:1px solid var(--gx-glass-border);border-radius:8px;font-size:11px}
+@media(max-width:767px){.firmware-card{padding:16px}.firmware-fields{grid-template-columns:1fr}.firmware-actions button{width:100%}}

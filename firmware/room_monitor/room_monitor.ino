@@ -46,6 +46,21 @@ void state(const String &id=""){
   emit(doc,"state",true);
 }
 void stopOutputs(){fan=false;buzzer=false;lamp=false;setOutputs();state();}
+// USB gateway may select its transport without erasing saved Wi-Fi credentials.
+bool configureUsb(const String &payload){
+  JsonDocument doc;if(deserializeJson(doc,payload)||doc["type"]!="configureUsb")return false;
+  String id=doc["deviceId"]|"";
+  JsonDocument ack;ack["type"]="usbConfigAck";
+  bool valid=id=="esp32-room-01"||id=="esp32-room-02";ack["ok"]=valid;
+  if(valid){
+    if(mqtt.connected()){mqtt.publish(prefix()+"/availability","offline",true,1);mqtt.disconnect();}
+    WiFi.disconnect(false,false);
+    deviceId=id;transport="usb";wasConnected=false;wasWifi=false;
+    prefs.begin("phongiot",false);prefs.putString("transport","usb");prefs.putString("id",id);prefs.end();
+    stopOutputs();ack["deviceId"]=deviceId;
+  }
+  serializeJson(ack,Serial);Serial.println();return true;
+}
 bool provision(const String &payload){
   JsonDocument doc;if(deserializeJson(doc,payload)||doc["type"]!="provision")return false;
   String ssid=doc["ssid"]|"",pass=doc["password"]|"",host=doc["broker"]|"",mpass=doc["mqttPassword"]|"",id=doc["deviceId"]|"esp32-room-01";
@@ -110,7 +125,7 @@ void loop(){
     if(WiFi.status()==WL_CONNECTED&&brokerHost.length()&&!mqtt.connected()&&millis()-lastMqttTry>5000){lastMqttTry=millis();if(mqtt.connect(deviceId.c_str(),"esp32",mqttPass.c_str())){net.setNoDelay(true);Serial.println("MQTT_CONNECTED");mqtt.subscribe(prefix()+"/command",1);mqtt.publish(prefix()+"/availability","online",true,1);state();}else{Serial.printf("MQTT_CONNECT_FAILED error=%d code=%d\n",mqtt.lastError(),mqtt.returnCode());}}
     mqtt.loop();if(wasConnected&&!mqtt.connected()){Serial.printf("MQTT_DISCONNECTED error=%d code=%d\n",mqtt.lastError(),mqtt.returnCode());stopOutputs();}wasConnected=mqtt.connected();
   }
-  while(Serial.available()){char c=Serial.read();if(c=='\n'){if(serialLine.length()){if(!provision(serialLine)&&transport=="usb")command(serialLine);}serialLine="";}else if(serialLine.length()<1500)serialLine+=c;else serialLine="";}
+  while(Serial.available()){char c=Serial.read();if(c=='\n'){if(serialLine.length()){if(!configureUsb(serialLine)&&!provision(serialLine)&&transport=="usb")command(serialLine);}serialLine="";}else if(serialLine.length()<1500)serialLine+=c;else serialLine="";}
   if(buzzer&&millis()-buzzerStarted>=BUZZER_LIMIT){buzzer=false;buzzerLockout=true;setOutputs();state();}
   if((fan||buzzer||lamp)&&millis()-lastCommand>COMMAND_TTL)stopOutputs();
   if(millis()-lastPublish>=3000){lastPublish=millis();publishSample();}

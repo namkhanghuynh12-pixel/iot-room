@@ -88,6 +88,7 @@ import { matchesCommandAck, arcPath, shouldReduceVideo } from './ui-state.js';
     sseConnected: false,
     eventSource: null,
     pollTimer: null,
+    firmwareBusy: false,
     activeTab: 'dashboard',
     theme: localStorage.getItem('galaxy_theme') || 'dark',
     fxMode: localStorage.getItem('galaxy_fx') || 'full', // 'full' | 'reduced' | 'off'
@@ -614,6 +615,7 @@ import { matchesCommandAck, arcPath, shouldReduceVideo } from './ui-state.js';
   // - Khi `device.acknowledged === true` và trạng thái thiết bị khớp: Xác nhận thành công.
   // - Quá 3000ms không nhận được ACK: Báo lỗi quá hạn 3s, rung đỏ, hoàn nguyên giao diện.
   async function sendActuatorCommand(type, targetValue) {
+    if(appState.firmwareBusy){toast('Đang nạp firmware. Đợi hoàn tất trước khi điều khiển.');return;}
     const snap = appState.snapshot;
     if (!snap || Object.values(appState.pendingCommands).some(Boolean)) return;
 
@@ -918,7 +920,7 @@ import { matchesCommandAck, arcPath, shouldReduceVideo } from './ui-state.js';
           toggleBtn.setAttribute('aria-pressed', String(Boolean(realState)));
           toggleBtn.classList.toggle('active', Boolean(realState));
 
-          if (!isOnline || !isManual || !appState.sseConnected || Object.values(appState.pendingCommands).some(Boolean)) {
+          if (!isOnline || !isManual || !appState.sseConnected || appState.firmwareBusy || Object.values(appState.pendingCommands).some(Boolean)) {
             toggleBtn.setAttribute('disabled', 'true');
           } else {
             toggleBtn.removeAttribute('disabled');
@@ -1530,6 +1532,54 @@ import { matchesCommandAck, arcPath, shouldReduceVideo } from './ui-state.js';
     }
   }
 
+  const firmwareUI={available:false,loaded:false,job:null,requesting:false};
+  const firmwarePhases={prepare:'Chuẩn bị',release:'Chuẩn bị cổng USB',detect:'Nhận diện board',backup:'Sao lưu Flash',compile:'Biên dịch firmware','verify-board':'Kiểm tra lại board',upload:'Đang ghi Flash',connect:'Đang kết nối USB / chờ ACK',done:'Hoàn tất',error:'Có lỗi',interrupted:'Phiên nạp bị gián đoạn'};
+  function renderFirmware(state){
+    if(!firmwareUI.loaded&&$('firmware-device'))$('firmware-device').value=state.job?.deviceId||appState.snapshot?.settings?.hardwareId||'esp32-room-01';
+    firmwareUI.available=Boolean(state.available);firmwareUI.loaded=true;firmwareUI.job=state.job;
+    appState.firmwareBusy=state.job?.status==='running'||firmwareUI.requesting;
+    if($('firmware-capability'))$('firmware-capability').textContent=state.message||'';
+    const locked=!firmwareUI.available||appState.firmwareBusy;
+    for(const id of ['firmware-port','firmware-device','firmware-backup-mode','firmware-scan'])if($(id))$(id).disabled=locked;
+    if($('firmware-submit'))$('firmware-submit').disabled=locked||!$('firmware-port')?.value;
+    const job=state.job;
+    if($('firmware-phase'))$('firmware-phase').textContent=job?firmwarePhases[job.phase]||job.phase:'Chưa bắt đầu nạp';
+    if($('firmware-message'))$('firmware-message').textContent=job?.message||(!state.available?'Mở bản local trên laptop có ESP32 cắm USB.':'Chọn cổng COM và mã thiết bị, rồi bấm Sao lưu & Nạp.');
+    if($('firmware-board'))$('firmware-board').textContent=job?[job.port,job.deviceId,job.chip,job.flashMB?`Flash ${job.flashMB} MB`:'',job.mac?`MAC ${job.mac}`:''].filter(Boolean).join(' · '):'';
+    if($('firmware-backup'))$('firmware-backup').textContent=job?.backup?(job.backupComplete?`Bản sao lưu đủ dung lượng trên laptop: data/${job.backup}`:'Bản sao lưu chưa hoàn tất; chưa cho phép ghi firmware.'):'';
+    const progress=$('firmware-progress');if(progress){const backupProgress=job?.phase==='backup'&&job.backupTotalBytes;progress.hidden=!backupProgress&&(job?.phase!=='upload'||job.uploadPercent==null);progress.value=backupProgress?job.backupBytes/job.backupTotalBytes*100:job?.uploadPercent||0;progress.setAttribute('aria-label',backupProgress?'Tiến trình sao lưu Flash':'Tiến trình ghi Flash');}
+    if($('firmware-log'))$('firmware-log').textContent=job?.logs?.join('\n')||'Chưa có nhật ký.';
+    if(appState.snapshot)renderSnapshot(appState.snapshot);
+    for(const id of ['source-sim','source-hw','device-select','control-mode','wifi-submit'])if($(id))$(id).disabled=appState.firmwareBusy;
+  }
+  async function loadFirmwareStatus(){
+    try{renderFirmware(await api('/api/firmware/status'));}catch(error){if(!firmwareUI.loaded&&$('firmware-capability'))$('firmware-capability').textContent='Không đọc được trạng thái công cụ nạp. Kiểm tra máy chủ local.';}
+  }
+  async function scanFirmwarePorts(){
+    const select=$('firmware-port');if(!select||!firmwareUI.available||appState.firmwareBusy)return;
+    const previous=select.value;$('firmware-scan').disabled=true;
+    try{
+      const {ports}=await api('/api/firmware/ports');select.replaceChildren();
+      const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent=ports.length?'Chọn board cần nạp':'Chưa có cổng COM — cắm cáp USB truyền dữ liệu';select.appendChild(placeholder);
+      for(const port of ports){const option=document.createElement('option');option.value=port.path;option.textContent=`${port.path} — ${port.label}`;select.appendChild(option);}
+      if(ports.some(p=>p.path===previous))select.value=previous;else if(ports.length===1)select.value=ports[0].path;
+      if($('firmware-device')&&appState.snapshot?.settings?.hardwareId&&!firmwareUI.job)$('firmware-device').value=appState.snapshot.settings.hardwareId;
+      $('firmware-submit').disabled=!select.value;
+    }catch(error){toast(error.message);}finally{$('firmware-scan').disabled=false;}
+  }
+  function setupFirmwareUI(){
+    $('firmware-scan')?.addEventListener('click',scanFirmwarePorts);
+    $('firmware-port')?.addEventListener('change',()=>{$('firmware-submit').disabled=!$('firmware-port').value||appState.firmwareBusy||!firmwareUI.available;});
+    $('firmware-form')?.addEventListener('submit',async event=>{
+      event.preventDefault();if(appState.firmwareBusy||!firmwareUI.available||!$('firmware-port').value)return;
+      firmwareUI.requesting=true;renderFirmware({available:true,message:'Đang gửi yêu cầu nạp',job:firmwareUI.job});
+      try{const result=await api('/api/firmware/flash',{port:$('firmware-port').value,deviceId:$('firmware-device').value,backupMode:$('firmware-backup-mode').value});firmwareUI.requesting=false;renderFirmware(result);}
+      catch(error){firmwareUI.requesting=false;toast(error.message);await loadFirmwareStatus();}
+    });
+    loadFirmwareStatus().then(()=>{if(firmwareUI.available&&!appState.firmwareBusy)scanFirmwarePorts();});
+    setInterval(()=>{if(!document.hidden&&(appState.firmwareBusy||appState.activeTab==='devices'))loadFirmwareStatus();},2000);
+  }
+
   async function loadSetupDefaults() {
     try {
       const p = await api('/api/setup');
@@ -1595,6 +1645,7 @@ import { matchesCommandAck, arcPath, shouldReduceVideo } from './ui-state.js';
 
     // Thiết lập sự kiện người dùng
     setupEventListeners();
+    setupFirmwareUI();
 
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
 

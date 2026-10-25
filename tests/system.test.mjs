@@ -6,6 +6,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import mqtt from 'mqtt';
+import http from 'node:http';
 const root=fileURLToPath(new URL('..',import.meta.url));
 const data=mkdtempSync(join(tmpdir(),'phong-iot-test-'));
 const port=19765,mqttPort=19883,base=`http://localhost:${port}`;
@@ -13,6 +14,7 @@ let child;
 const delay=ms=>new Promise(r=>setTimeout(r,ms));
 async function waitFor(fn,timeout=12000){const end=Date.now()+timeout;while(Date.now()<end){try{const p=await fn();if(p)return p;}catch{}await delay(100);}throw Error('Timed out');}
 async function api(url,p){const r=await fetch(base+url,p===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});const v=await r.json();if(!r.ok)throw Error(v.error);return v;}
+function alternateHost(url,p){return new Promise((resolve,reject)=>{const req=http.request(base+url,{method:p?'POST':'GET',headers:{Host:'other.onrender.com','Content-Type':'application/json'}},res=>{let body='';res.on('data',part=>body+=part);res.on('end',()=>resolve({status:res.statusCode,body:JSON.parse(body)}));});req.on('error',reject);req.end(p?JSON.stringify(p):undefined);});}
 async function start(){child=spawn(process.execPath,['server.mjs'],{cwd:root,env:{...process.env,IOT_DATA_DIR:data,IOT_HTTP_PORT:String(port),IOT_MQTT_PORT:String(mqttPort)},stdio:['ignore','pipe','pipe']});let errors='';child.stderr.on('data',b=>errors+=b);child.on('exit',c=>{if(c)console.error(errors);});await waitFor(()=>api('/api/health'));}
 async function stop(){if(child?.exitCode===null){child.kill();await new Promise(r=>child.once('exit',r));}}
 test('MQTT, controls, two nodes, SQL persistence and access checks',{timeout:60000},async t=>{
@@ -39,6 +41,10 @@ test('MQTT, controls, two nodes, SQL persistence and access checks',{timeout:600
   r=await fetch(base+'/bg.mp4',{headers:{Range:'bytes=999999999-'}});assert.equal(r.status,416);
   r=await fetch(base+'/bg.mp4',{headers:{Range:'bytes=10-5'}});assert.equal(r.status,416);
   r=await fetch(base+'/poster.jpg');assert.equal(r.status,200);assert.match(r.headers.get('content-type'),/image\/jpeg/);
+  r=await fetch(base+'/api/firmware/status');assert.equal(r.status,200);assert.equal((await r.json()).supportedChip,'ESP32-C5');
+  let alternate=await alternateHost('/api/firmware/status');assert.equal(alternate.body.available,false);
+  alternate=await alternateHost('/api/firmware/flash',{port:'COM16',deviceId:'esp32-room-01'});assert.equal(alternate.status,403);
+  r=await fetch(base+'/api/firmware/flash',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({port:'COM9999',deviceId:'esp32-room-01'})});assert.equal(r.status,400);
   const secret=JSON.parse(readFileSync(join(data,'credentials.json')));
   const hw=await mqtt.connectAsync(`mqtt://127.0.0.1:${mqttPort}`,{clientId:'esp32-room-01',protocolVersion:4,username:'esp32',password:secret.hardware,reconnectPeriod:0});
   await api('/api/settings',{source:'hardware',mode:'auto'});

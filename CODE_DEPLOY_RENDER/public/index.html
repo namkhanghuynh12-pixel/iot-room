@@ -498,6 +498,25 @@
             <!-- Được render động từ snapshot.devices -->
           </div>
 
+          <section class="sub-glass-card firmware-card" aria-labelledby="firmware-title">
+            <div class="panel-section-head">
+              <div class="card-tag"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-chip"/></svg><h3 id="firmware-title">Nạp firmware ESP32 qua USB</h3></div>
+              <span class="sensor-chip">ESP32-C5 · Tự nhận Flash</span>
+            </div>
+            <p class="muted" id="firmware-capability">Đang kiểm tra công cụ nạp trên máy chủ…</p>
+            <form id="firmware-form" class="galaxy-form">
+              <div class="firmware-fields">
+                <div class="field-item"><label for="firmware-port">Cổng COM của board</label><select id="firmware-port" class="galaxy-select" required disabled><option value="">Bấm Quét cổng COM</option></select></div>
+                <div class="field-item"><label for="firmware-device">Mã thiết bị sau khi nạp</label><select id="firmware-device" class="galaxy-select" disabled><option value="esp32-room-01">Phòng 01 · esp32-room-01</option><option value="esp32-room-02">Phòng 02 · esp32-room-02</option></select></div>
+              </div>
+              <div class="field-item firmware-backup-field"><label for="firmware-backup-mode">Phạm vi sao lưu trước khi nạp</label><select id="firmware-backup-mode" class="galaxy-select"><option value="affected">Vùng sẽ ghi + NVS — các vùng khác giữ nguyên</option><option value="full">Toàn bộ Flash — lâu hơn, cần đọc được mọi vùng</option></select></div>
+              <p class="firmware-help">Biên dịch code đồ án → sao lưu phạm vi đã chọn → nạp → tự kết nối USB và kiểm tra ACK. Sao lưu vùng sẽ ghi lưu đủ các sector sẽ thay đổi và cấu hình NVS, không phải bản sao toàn bộ Flash. Firmware mới thay chương trình hiện có; thông tin Wi-Fi được giữ, đường truyền chuyển sang USB. PSRAM tắt. Chọn đúng cổng và giữ cáp trong lúc nạp.</p>
+              <div class="firmware-actions"><button id="firmware-scan" type="button" class="bridge-btn outline" disabled>Quét cổng COM</button><button id="firmware-submit" type="submit" class="bridge-btn primary" disabled>Sao lưu & Nạp code đồ án</button></div>
+            </form>
+            <div class="firmware-status" role="status" aria-live="polite"><strong id="firmware-phase">Chưa bắt đầu nạp</strong><p id="firmware-message"></p><p id="firmware-board" class="muted"></p><p id="firmware-backup" class="muted"></p><progress id="firmware-progress" max="100" value="0" hidden aria-label="Tiến trình ghi Flash"></progress></div>
+            <details class="firmware-log-details"><summary>Nhật ký biên dịch và nạp</summary><pre id="firmware-log" tabindex="0">Chưa có nhật ký.</pre></details>
+          </section>
+
           <!-- PHẦN CẤU HÌNH WIFI & KẾT NỐI ESP32 (TỪ BẢN TRƯỚC) -->
           <div class="wifi-provision-section">
             <!-- Cột 1: Cấu hình Wi-Fi qua cáp USB -->

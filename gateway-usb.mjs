@@ -12,7 +12,20 @@ const id = process.argv[3] || 'esp32-room-01';
 if (!/^esp32-room-0[12]$/.test(id)) throw Error('Device ID không hợp lệ');
 
 // Lock to prevent duplicate gateway instances
-const lock = net.createServer();
+const lock = net.createServer(socket => {
+  socket.setTimeout(1500,()=>socket.destroy());
+  let request='';
+  socket.on('data',data=>{
+    request+=data.toString();if(request.length>1024)return socket.destroy();
+    if(!request.includes('\n'))return;
+    try {
+      const p=JSON.parse(request.split('\n')[0]);
+      if(p.token!==secrets.hardware||p.action!=='release'||(p.port&&p.port.toUpperCase()!==(currentPortName||process.argv[2]||'').toUpperCase()))return socket.end(JSON.stringify({released:false})+'\n');
+      socket.end(JSON.stringify({released:true,deviceId:id})+'\n');
+      setTimeout(stop,50);
+    }catch{socket.destroy();}
+  });
+});
 await new Promise((resolve, reject) => {
   lock.once('error', () => reject(Error('Gateway cho thiết bị này đang chạy; không mở thêm một bản.')));
   lock.listen(id.endsWith('02') ? 18767 : 18766, '127.0.0.1', resolve);
@@ -20,9 +33,7 @@ await new Promise((resolve, reject) => {
 
 async function findPort() {
   const ports = await SerialPort.list();
-  if (process.argv[2] && ports.some(p => p.path.toUpperCase() === process.argv[2].toUpperCase())) {
-    return process.argv[2];
-  }
+  if (process.argv[2]) return ports.some(p => p.path.toUpperCase() === process.argv[2].toUpperCase()) ? process.argv[2] : null;
   const found = ports.find(p =>
     ['303a', '10c4', '1a86'].includes(p.vendorId?.toLowerCase()) ||
     /ch340|cp210|usb-serial|esp32/i.test(p.friendlyName || '')
@@ -37,6 +48,12 @@ let count = 0;
 let lastFrame = 0;
 let brokerUp = false;
 let isOpening = false;
+let usbAnnounced = false;
+const selectUsb = port => port.write(JSON.stringify({type:'configureUsb',deviceId:id})+'\n');
+function announceUsbOffline(){
+  if (usbAnnounced && client.connected) client.publish(`iot/${id}/availability`,'offline',{retain:true});
+  usbAnnounced=false;
+}
 
 // Connect with clientId "-gw" so Wi-Fi and USB never kick each other
 const client = mqtt.connect(`mqtt://127.0.0.1:${process.env.IOT_MQTT_PORT || 1883}`, {
@@ -44,8 +61,7 @@ const client = mqtt.connect(`mqtt://127.0.0.1:${process.env.IOT_MQTT_PORT || 188
   protocolVersion: 4,
   username: 'esp32',
   password: secrets.hardware,
-  reconnectPeriod: 2000,
-  will: { topic: `iot/${id}/availability`, payload: 'offline', retain: true }
+  reconnectPeriod: 2000
 });
 
 client.on('connect', () => {
@@ -95,6 +111,10 @@ async function openPort() {
         }
         try {
           const f = JSON.parse(line);
+          if (f.type === 'usbConfigAck') {
+            console.log(f.ok && f.deviceId === id ? `USB_MODE_CONFIRMED ${id}` : 'Board từ chối cấu hình USB');
+            continue;
+          }
           if (!['telemetry', 'state', 'availability'].includes(f.type)) continue;
           if (f.deviceId !== id) {
             console.warn('ID firmware không khớp gateway:', f.deviceId);
@@ -102,6 +122,7 @@ async function openPort() {
           }
           lastFrame = Date.now();
           if (brokerUp) {
+            usbAnnounced = true;
             client.publish(`iot/${id}/availability`, 'online', { retain: true });
             if (f.type !== 'availability') {
               client.publish(`iot/${id}/${f.type}`, JSON.stringify(f), { qos: 1, retain: f.type === 'state' });
@@ -120,6 +141,7 @@ async function openPort() {
     });
 
     port.on('close', () => {
+      announceUsbOffline();
       lastFrame = 0;
       console.warn(`USB [${portName}] disconnected; retrying...`);
       activePort = null;
@@ -135,6 +157,8 @@ async function openPort() {
       activePort = port;
       buffer = '';
       console.log(`USB_GATEWAY_READY ${portName} -> iot/${id}`);
+      port.set({dtr:true,rts:false}, err => { if (err) console.warn('USB control lines:',err.message); });
+      selectUsb(port);
     });
   } catch (err) {
     isOpening = false;
@@ -144,17 +168,15 @@ async function openPort() {
 
 const timer = setInterval(() => {
   if (!activePort || !activePort.isOpen) openPort();
-  if (client.connected && Date.now() - lastFrame > 20000) {
-    client.publish(`iot/${id}/availability`, 'offline', { retain: true });
-  }
+  if (activePort?.isOpen && !lastFrame) selectUsb(activePort);
+  if (Date.now() - lastFrame > 20000) announceUsbOffline();
 }, 3000);
 
 openPort();
 
 function stop() {
   clearInterval(timer);
-  if (client.connected) client.publish(`iot/${id}/availability`, 'offline', { retain: true }, () => client.end());
-  else client.end(true);
+  announceUsbOffline();client.end();
   if (activePort && activePort.isOpen) activePort.close();
   setTimeout(() => process.exit(0), 600).unref();
 }

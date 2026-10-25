@@ -133,6 +133,8 @@ const server = http.createServer(async (req,res) => {
       if(!fs.existsSync(apk))return json(res,{error:'APK chưa được build'},404);
       res.writeHead(200,{'Content-Type':'application/vnd.android.package-archive','Content-Disposition':'attachment; filename="PhongIoT-debug.apk"'});fs.createReadStream(apk).pipe(res);return;
     }
+    if(url.pathname==='/api/firmware/status'&&req.method==='GET')return json(res,{available:false,message:'Render không truy cập được USB của laptop. Mở http://localhost:8765 để quét cổng COM và nạp ESP32.',job:null});
+    if(url.pathname.startsWith('/api/firmware/'))return json(res,{error:'Chỉ nạp ESP32 trên bản local của laptop'},403);
     if (req.method === 'GET' && url.pathname === '/api/status') return json(res,snapshot());
     if (req.method === 'GET' && url.pathname === '/api/history') return json(res,latestHistory(activeId(),1000));
     if (req.method === 'GET' && url.pathname === '/api/setup') {
