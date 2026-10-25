@@ -1,5 +1,7 @@
 # Phòng ở thông minh với ESP32 C5 N16R8
 
+> Cập nhật 25/10/2026: đã bỏ MQ135, không đo mức khí. Web có ba gauge (nhiệt độ, độ ẩm, ánh sáng) và PIR; còi chỉ điều khiển thủ công. Các đoạn minh chứng khí cũ là lịch sử của phiên bản trước. Firmware/app khách cũ vẫn có thể gửi trường airQuality nhưng server không dùng làm số đo hoặc cảnh báo nữa.
+
 Hệ thống giám sát và điều khiển hai phòng, viết bằng Node.js, MQTT và web tiếng Việt. Laptop chạy edge gateway và SQLite; ESP32 có thể kết nối qua USB hoặc Wi-Fi. Bạn đang có một ESP32-C5 N16R8; các cảm biến và tải bên ngoài chưa có.
 
 ## Mở hệ thống
@@ -17,8 +19,8 @@ Hệ thống giám sát và điều khiển hai phòng, viết bằng Node.js, M
 
 ## Các chức năng
 
-- Nhiệt độ, độ ẩm không khí, mức khí tương đối, ánh sáng và chuyển động PIR.
-- Bốn gauge và đồ thị bốn đường theo thời gian.
+- Nhiệt độ, độ ẩm không khí, ánh sáng và chuyển động PIR.
+- Ba gauge và đồ thị ba đường theo thời gian.
 - Quạt thông gió, đèn và còi cảnh báo; chế độ tự động hoặc thủ công.
 - Quạt bật từ 30 °C, tắt dưới 28 °C.
 - Còi bật khi chỉ số khí demo từ 70, tắt khi về 55; còi tự ngắt sau 10 giây và chỉ được bật lại sau khi nhận lệnh TẮT.

@@ -93,13 +93,11 @@
     prevValues: {
       temperature: null,
       humidity: null,
-      airQuality: null,
       light: null
     },
     displayedValues: {
       temperature: 0,
       humidity: 0,
-      airQuality: 0,
       light: 0
     },
     // Actuator pending ACK watchers
@@ -112,7 +110,6 @@
     activeSeries: {
       temperature: true,
       humidity: true,
-      airQuality: true,
       light: true
     }
   };
@@ -546,7 +543,6 @@
       this.seriesMeta = {
         temperature: { label: 'Nhiệt độ', unit: '°C', color: '#ff7a45', axis: 'right', min: 0, max: 60 },
         humidity: { label: 'Độ ẩm', unit: '%', color: '#00f5d4', axis: 'left', min: 0, max: 100 },
-        airQuality: { label: 'Khí tương đối', unit: 'điểm', color: '#b388ff', axis: 'left', min: 0, max: 100 },
         light: { label: 'Ánh sáng', unit: '%', color: '#ffd166', axis: 'left', min: 0, max: 100 }
       };
 
@@ -979,7 +975,7 @@
       devSelect.value = snap.settings.hardwareId;
     }
 
-    // 6. Cập nhật 4 KPI Bento Cards & SVG Gauges
+    // 6. Cập nhật 3 KPI Bento Cards & SVG Gauges
     const d = snap.device || {};
 
     // 6.1 Nhiệt độ (0 - 60 °C, bật >=30, tắt <=28)
@@ -1005,18 +1001,6 @@
     const cardHum = $('card-hum');
     if (cardHum) {
       cardHum.classList.toggle('danger-pulse', curHum >= 80);
-    }
-
-    // 6.3 Mức khí tương đối (MQ135: 0 - 100 điểm, bật >=70, tắt <=55)
-    const curGas = d.airQuality;
-    animateKpiNumber('airQuality', curGas, 0);
-    updateTrendBadge('airQuality', curGas);
-    updateSvgGauge('gas', curGas, 0, 100);
-    appState.prevValues.airQuality = curGas;
-
-    const cardGas = $('card-gas');
-    if (cardGas) {
-      cardGas.classList.toggle('danger-pulse', curGas >= 70);
     }
 
     // 6.4 Ánh sáng tương đối % (LDR: 0 - 100 %, bật <=25, tắt >=40)
@@ -1129,15 +1113,13 @@
   function renderRulesSettings(settings) {
     if (!settings) return;
 
-    // Cập nhật giá trị hiển thị trong 4 thẻ quy tắc mô tả
+    // Cập nhật giá trị hiển thị trong 3 thẻ quy tắc mô tả
     const setVal = (id, text) => {
       const el = $(id);
       if (el) el.textContent = text;
     };
     if (settings.onTemperature != null) setVal('rule-desc-tempOn', `≥ ${settings.onTemperature} °C`);
     if (settings.offTemperature != null) setVal('rule-desc-tempOff', `≤ ${settings.offTemperature} °C`);
-    if (settings.airQualityOn != null) setVal('rule-desc-airOn', `≥ ${settings.airQualityOn} điểm`);
-    if (settings.airQualityOff != null) setVal('rule-desc-airOff', `≤ ${settings.airQualityOff} điểm`);
     if (settings.lightOn != null) setVal('rule-desc-lightOn', `≤ ${settings.lightOn}%`);
     if (settings.lightOff != null) setVal('rule-desc-lightOff', `≥ ${settings.lightOff}%`);
     if (settings.humidityAlert != null) setVal('rule-desc-humAlert', `≥ ${settings.humidityAlert}%`);
@@ -1145,7 +1127,7 @@
     // Đồng bộ các trường input nếu người dùng không đang nhập liệu
     const rulesForm = $('rules-form');
     if (rulesForm && !rulesForm.matches(':focus-within')) {
-      const keys = ['onTemperature', 'offTemperature', 'airQualityOn', 'airQualityOff', 'lightOn', 'lightOff', 'humidityAlert'];
+      const keys = ['onTemperature', 'offTemperature', 'lightOn', 'lightOff', 'humidityAlert'];
       for (const k of keys) {
         if (rulesForm.elements[k] && settings[k] != null) {
           rulesForm.elements[k].value = settings[k];
@@ -1281,7 +1263,7 @@
 
     const data = appState.historyData || [];
     if (data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" class="table-empty">Chưa có dữ liệu lịch sử trong cơ sở dữ liệu.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" class="table-empty">Chưa có dữ liệu lịch sử trong cơ sở dữ liệu.</td></tr>';
       if (pageInfo) pageInfo.textContent = 'Trang 1 / 1 (0 bản ghi)';
       if (prevBtn) prevBtn.disabled = true;
       if (nextBtn) nextBtn.disabled = true;
@@ -1310,9 +1292,6 @@
       const tdHum = document.createElement('td');
       tdHum.textContent = row.humidity != null ? Number(row.humidity).toFixed(1) : '--';
 
-      const tdGas = document.createElement('td');
-      tdGas.textContent = row.airQuality != null ? Number(row.airQuality).toFixed(0) : '--';
-
       const tdLight = document.createElement('td');
       tdLight.textContent = row.light != null ? Number(row.light).toFixed(0) : '--';
 
@@ -1322,7 +1301,6 @@
       tr.appendChild(tdTime);
       tr.appendChild(tdTemp);
       tr.appendChild(tdHum);
-      tr.appendChild(tdGas);
       tr.appendChild(tdLight);
       tr.appendChild(tdMotion);
       tbody.appendChild(tr);
@@ -1363,7 +1341,6 @@
             id: Date.now(),
             temperature: snap.device.temperature,
             humidity: snap.device.humidity,
-            airQuality: snap.device.airQuality,
             light: snap.device.light,
             motion: snap.device.motion,
             synthetic: Boolean(snap.device.synthetic),

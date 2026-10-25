@@ -16,13 +16,13 @@ export function validateTelemetry(p) {
   if (!p || typeof p !== 'object' || typeof p.temperature !== 'number' || !Number.isFinite(p.temperature) || p.temperature < -40 || p.temperature > 80 || typeof p.humidity !== 'number' || !Number.isFinite(p.humidity) || p.humidity < 0 || p.humidity > 100) throw Error('Dữ liệu cảm biến không hợp lệ');
   for (const k of ['airQuality','light']) if (p[k] !== undefined && (typeof p[k] !== 'number' || !Number.isFinite(p[k]) || p[k] < 0 || p[k] > 100)) throw Error('Khí/ánh sáng không hợp lệ');
   if(p.motion!==undefined&&typeof p.motion!=='boolean')throw Error('Chuyển động phải là boolean');
-  return { temperature: p.temperature, humidity: p.humidity, airQuality: p.airQuality ?? null, light: p.light ?? null, motion:p.motion??null };
+  return { temperature: p.temperature, humidity: p.humidity, airQuality: null, light: p.light ?? null, motion:p.motion??null };
 }
 export function nextOutputs(s, d) {
   const fan = nextFan(s,d.temperature,d.desiredFan);
   const hysteresis = (value,on,off,previous) => value === null ? false : value <= on ? true : value >= off ? false : Boolean(previous);
-  const alarm=d.airQuality===null?false:d.airQuality>=s.airQualityOn?true:d.airQuality<=s.airQualityOff?false:Boolean(d.desiredBuzzer);
-  return { fan, buzzer: s.mode === 'manual' ? s.manualBuzzer : alarm, led: s.mode === 'manual' ? s.led : d.motion !== true ? false : hysteresis(d.light,s.lightOn,s.lightOff,d.desiredLed) };
+  // Không đo MQ135: còi chỉ nhận lệnh thủ công. Giữ trường legacy để đọc database cũ.
+  return { fan, buzzer: s.mode === 'manual' ? s.manualBuzzer : false, led: s.mode === 'manual' ? s.led : d.motion !== true ? false : hysteresis(d.light,s.lightOn,s.lightOff,d.desiredLed) };
 }
 export function nextFan(s, temp, current = false) {
   if (s.mode === 'manual') return s.manualFan;

@@ -19,13 +19,13 @@ test('MQTT, controls, two nodes, SQL persistence and access checks',{timeout:600
   t.after(stop);await start();
   let s=await waitFor(async()=>{const p=await api('/api/status');return p.devices.filter(d=>d.online).length===2&&p;});assert.equal(s.device.id,'sim-room-01');
   await api('/api/simulator',{scenario:'custom',temperature:34,humidity:83,airQuality:90,light:10,motion:true});
-  s=await waitFor(async()=>{const p=await api('/api/status');return p.device.fan&&p.device.buzzer&&p.device.led&&p.device.acknowledged&&p;});assert.equal(s.device.alert,true);
-  await waitFor(async()=>{const p=await api('/api/status');return !p.device.buzzer&&p.device.buzzerLockout;},13000);
+  s=await waitFor(async()=>{const p=await api('/api/status');return p.device.fan&&!p.device.buzzer&&p.device.led&&p.device.acknowledged&&p;});assert.equal(s.device.alert,true);
   await api('/api/simulator',{scenario:'custom',temperature:26,humidity:60,airQuality:20,light:80,motion:false});
   await waitFor(async()=>{const p=await api('/api/status');return !p.device.fan&&!p.device.buzzer&&!p.device.led&&p.device.acknowledged;});
   await api('/api/settings',{mode:'manual',manualFan:true,manualBuzzer:true,led:true});
   s=await waitFor(async()=>{const p=await api('/api/status');return p.device.fan&&p.device.buzzer&&p.device.led&&p.device.acknowledged&&p;});
-  assert.ok(s.devices.find(d=>d.id==='sim-room-02'));const rows=await api('/api/history');assert.ok(rows.length>=2);assert.equal(rows.at(-1).airQuality,20);
+  await waitFor(async()=>{const p=await api('/api/status');return !p.device.buzzer&&p.device.buzzerLockout;},13000);
+  assert.ok(s.devices.find(d=>d.id==='sim-room-02'));const rows=await api('/api/history');assert.ok(rows.length>=2);assert.equal(rows.at(-1).airQuality,null);
   let r=await fetch(base+'/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:'{"onTemperature":0}'});assert.equal(r.status,400);
   r=await fetch(base+'/api/settings',{method:'POST',headers:{'Content-Type':'application/json',Origin:'https://evil.invalid'},body:'{}'});assert.equal(r.status,403);
   r=await fetch(base+'/api/export');assert.match(await r.text(),/temperature_c/);

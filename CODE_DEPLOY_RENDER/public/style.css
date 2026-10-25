@@ -694,10 +694,10 @@ body {
   color: var(--gx-text-muted);
 }
 
-/* 7. LƯỚI BENTO 4 CỘT KPI (METRICS) */
+/* 7. LƯỚI BENTO 3 CỘT KPI (METRICS) */
 .bento-metrics-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 }
 

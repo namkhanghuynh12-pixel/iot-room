@@ -1,3 +1,5 @@
+> Cập nhật 25/10/2026: bỏ MQ135 và bộ chia áp khí, không cần mua/lắp cảm biến khí. Còi chỉ điều khiển thủ công. Phần quạt dùng 12 V–1 A theo lựa chọn mới của bạn.
+
 # Linh kiện cho phòng ở thông minh
 
 Bạn đã có ESP32-C5 N16R8. Bắt đầu làm một phòng trước; bổ sung ESP32 thứ hai khi cần nghiệm thu tiêu chí nhiều thiết bị thật.
@@ -8,8 +10,6 @@ Bạn đã có ESP32-C5 N16R8. Bắt đầu làm một phòng trước; bổ sun
 | DHT22 module | 1 | 2 | Hoạt động được với nguồn 3,3 V, có pull-up hoặc thêm 10 kΩ |
 | LDR và điện trở 10 kΩ | 1 bộ | 2 bộ | Làm bộ chia áp ánh sáng 0–3,3 V |
 | PIR HC-SR501 | 1 | 2 | Cấp nguồn theo module; kiểm tra mức OUT phù hợp GPIO 3,3 V |
-| MQ135 module | 1 | 2 | Nguồn 5 V cho heater, analog qua bộ chia áp; dùng chỉ số tương đối |
-| Điện trở chia áp MQ135 | 20 kΩ + 10 kΩ | 2 bộ | Không đưa analog 5 V trực tiếp vào ESP32 |
 | Quạt DC 5 V | 1 | 2 | Chọn tải nhỏ, biết dòng định mức |
 | Mạch MOSFET đóng cắt | 1 kênh | 2 kênh | Nhận mức điều khiển 3,3 V; đủ dòng quạt |
 | Diode bảo vệ quạt | 1 nếu driver chưa có | 2 | Theo tải và mạch MOSFET, lắp ngược song song tải |
@@ -27,7 +27,6 @@ Bạn đã có ESP32-C5 N16R8. Bắt đầu làm một phòng trước; bổ sun
 | Tín hiệu | GPIO C5 | Đấu nối |
 |---|---:|---|
 | DHT22 DATA | 7 | VCC 3,3 V; GND chung; DATA kéo lên 3,3 V bằng 10 kΩ nếu module chưa có |
-| MQ135 analog | 1 | AO → 20 kΩ → điểm ADC; điểm ADC → 10 kΩ → GND; heater/module theo nguồn yêu cầu |
 | LDR analog | 3 | 3,3 V → LDR → điểm ADC → 10 kΩ → GND; sáng hơn cho điện áp cao hơn |
 | PIR OUT | 10 | Kiểm tra OUT không quá mức GPIO cho phép; VCC theo thông số module |
 | Quạt qua MOSFET | 4 | GPIO vào chân điều khiển driver; quạt cấp nguồn tải riêng |

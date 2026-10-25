@@ -72,7 +72,7 @@ broker.on('publish', (packet, client) => {
       const p = validateTelemetry(JSON.parse(packet.payload.toString())); Object.assign(d, p, { online: true, at: new Date().toISOString() });
       d.synthetic = JSON.parse(packet.payload.toString()).synthetic === true;
       db.prepare('INSERT INTO samples(device,temperature,humidity,airQuality,light,motion,at) VALUES(?,?,?,?,?,?,?)').run(id, p.temperature, p.humidity, p.airQuality,p.light,p.motion===null?null:Number(p.motion),d.at);
-      const alert = p.temperature >= settings.onTemperature || p.humidity >= settings.humidityAlert || p.airQuality>=settings.airQualityOn;
+      const alert = p.temperature >= settings.onTemperature || p.humidity >= settings.humidityAlert;
       if (alert !== d.alert) { d.alert = alert; log(alert ? 'alert' : 'info', `${id}: ${alert ? 'Vượt ngưỡng' : 'Trở về bình thường'} (${p.temperature} °C / ${p.humidity} %)`); }
       publishCommand(d);
     }
@@ -143,7 +143,7 @@ const server = http.createServer(async (req,res) => {
     if (req.method === 'GET' && url.pathname === '/api/export') {
       const rows = db.prepare('SELECT at,device,temperature,humidity,airQuality,light FROM samples WHERE device=? ORDER BY id DESC LIMIT 100000').all(activeId()).reverse();
       res.writeHead(200, { 'Content-Type':'text/csv; charset=utf-8', 'Content-Disposition':'attachment; filename="iot-history.csv"' });
-      return res.end('\uFEFFtime_utc,device,temperature_c,humidity_percent,airQuality_percent,light_percent\r\n'+rows.map(r=>`${r.at},${r.device},${r.temperature},${r.humidity},${r.airQuality ?? ''},${r.light ?? ''}`).join('\r\n'));
+      return res.end('\uFEFFtime_utc,device,temperature_c,humidity_percent,light_percent\r\n'+rows.map(r=>`${r.at},${r.device},${r.temperature},${r.humidity},${r.light ?? ''}`).join('\r\n'));
     }
     if (req.method === 'GET' && url.pathname === '/api/events') {
       res.writeHead(200, { 'Content-Type':'text/event-stream', 'Cache-Control':'no-cache', Connection:'keep-alive' });

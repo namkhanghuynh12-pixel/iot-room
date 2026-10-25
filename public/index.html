@@ -35,9 +35,6 @@
     <symbol id="i-drop" viewBox="0 0 24 24">
       <path d="M12 2c-3 5-8 9-8 13a8 8 0 0 0 16 0c0-4-5-8-8-13Z"/>
     </symbol>
-    <symbol id="i-gas" viewBox="0 0 24 24">
-      <path d="M4 19h16M4 15h12M4 11h14M4 7h8M4 3h16"/>
-    </symbol>
     <symbol id="i-sun" viewBox="0 0 24 24">
       <path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M5 19l2-2M17 7l2-2"/>
     </symbol>
@@ -267,40 +264,7 @@
             </div>
           </article>
 
-          <!-- KPI 3: Mức khí tương đối (MQ135) -->
-          <article class="bento-card kpi-card kpi-gas" id="card-gas">
-            <div class="card-head">
-              <div class="card-tag">
-                <svg class="icon icon-sm" aria-hidden="true"><use href="#i-gas"/></svg>
-                <span>Mức khí tương đối</span>
-              </div>
-              <span class="sensor-chip">MQ135</span>
-            </div>
-            <div class="kpi-body">
-              <div class="kpi-digit-row">
-                <span class="kpi-value tabular" id="val-airQuality">--</span>
-                <span class="kpi-unit">điểm</span>
-              </div>
-              <span class="kpi-trend" id="trend-airQuality">→ Ổn định</span>
-            </div>
-            <div class="gauge-container">
-              <svg class="galaxy-gauge" id="svg-gauge-gas" viewBox="0 0 200 110" role="img" aria-label="Đồng hồ đo mức khí tương đối 0 đến 100 điểm">
-                <path class="gauge-track" d="M 25 95 A 75 75 0 0 1 175 95"></path>
-                <path class="gauge-zone zone-ok" d="M 25 95 A 75 75 0 0 1 107 21"></path>
-                <path class="gauge-zone zone-warn" d="M 107 21 A 75 75 0 0 1 130 25"></path>
-                <path class="gauge-zone zone-danger" d="M 130 25 A 75 75 0 0 1 175 95"></path>
-                <path class="gauge-progress" id="prog-gas" d="M 25 95 A 75 75 0 0 1 25 95"></path>
-                <line class="gauge-needle" id="needle-gas" x1="100" y1="95" x2="35" y2="95"></line>
-                <circle class="gauge-pivot" cx="100" cy="95" r="5"></circle>
-              </svg>
-            </div>
-            <div class="card-foot">
-              <span>Thang: 0 – 100 điểm</span>
-              <span>Còi báo: Bật ≥70 / Tắt ≤55</span>
-            </div>
-          </article>
-
-          <!-- KPI 4: Ánh sáng tương đối % (LDR) -->
+          <!-- KPI 3: Ánh sáng tương đối % (LDR) -->
           <article class="bento-card kpi-card kpi-light" id="card-light">
             <div class="card-head">
               <div class="card-tag">
@@ -349,9 +313,6 @@
                 </button>
                 <button type="button" class="legend-chip active legend-hum" data-key="humidity" aria-pressed="true">
                   <span class="legend-color"></span> Độ ẩm (%)
-                </button>
-                <button type="button" class="legend-chip active legend-gas" data-key="airQuality" aria-pressed="true">
-                  <span class="legend-color"></span> Khí tương đối
                 </button>
                 <button type="button" class="legend-chip active legend-light" data-key="light" aria-pressed="true">
                   <span class="legend-color"></span> Ánh sáng (%)
@@ -639,21 +600,9 @@
               <span class="rule-status active">Đang hiệu lực trong hệ thống</span>
             </div>
 
-            <!-- Quy tắc 2 -->
-            <div class="rule-card">
-              <div class="rule-badge">LUẬT 02 · AN TOÀN KHÔNG KHÍ</div>
-              <h3>Báo Động Khí Gas / Khói (MQ135)</h3>
-              <p class="rule-desc">
-                &bull; Bật còi báo động khi mức khí tương đối <strong id="rule-desc-airOn">≥ 70 điểm</strong>.<br>
-                &bull; Tắt còi khi mức khí hạ xuống <strong id="rule-desc-airOff">≤ 55 điểm</strong>.<br>
-                &bull; Cơ chế an toàn: Tự ngắt sau <strong>tối đa 10 giây</strong> để bảo vệ còi.
-              </p>
-              <span class="rule-status active">Đang hiệu lực trong hệ thống</span>
-            </div>
-
             <!-- Quy tắc 3 -->
             <div class="rule-card">
-              <div class="rule-badge">LUẬT 03 · TIẾT KIỆM NĂNG LƯỢNG</div>
+              <div class="rule-badge">LUẬT 02 · TIẾT KIỆM NĂNG LƯỢNG</div>
               <h3>Chiếu Sáng Theo Hiện Diện & Mức Sáng</h3>
               <p class="rule-desc">
                 &bull; Bật đèn khi ánh sáng <strong id="rule-desc-lightOn">≤ 25%</strong> VÀ có phát hiện chuyển động PIR.<br>
@@ -664,7 +613,7 @@
 
             <!-- Quy tắc 4 -->
             <div class="rule-card">
-              <div class="rule-badge">LUẬT 04 · CẢNH BÁO MÔI TRƯỜNG</div>
+              <div class="rule-badge">LUẬT 03 · CẢNH BÁO MÔI TRƯỜNG</div>
               <h3>Giám Sát Độ Ẩm Cao</h3>
               <p class="rule-desc">
                 &bull; Phát cảnh báo khi độ ẩm không khí <strong id="rule-desc-humAlert">≥ 80%</strong>.<br>
@@ -704,25 +653,9 @@
                 <span class="field-hint">Ngưỡng bật phải cao hơn ngưỡng tắt để tạo vùng trễ chống gián đoạn.</span>
               </fieldset>
 
-              <!-- Nhóm 2: Cảnh báo khí gas -->
-              <fieldset class="rule-fieldset">
-                <legend class="fieldset-legend">02 / Cảnh báo mức khí tương đối</legend>
-                <div class="fields-row">
-                  <div class="field-item">
-                    <label for="rule-airQualityOn">Bật còi khi khí ≥ (điểm):</label>
-                    <input id="rule-airQualityOn" name="airQualityOn" type="number" min="0" max="95" step="1" class="galaxy-input" required>
-                  </div>
-                  <div class="field-item">
-                    <label for="rule-airQualityOff">Tắt còi khi khí ≤ (điểm):</label>
-                    <input id="rule-airQualityOff" name="airQualityOff" type="number" min="5" max="100" step="1" class="galaxy-input" required>
-                  </div>
-                </div>
-                <span class="field-hint">MQ135 báo còi cảnh báo khi vượt ngưỡng, tự ngắt tối đa sau 10 giây.</span>
-              </fieldset>
-
               <!-- Nhóm 3: Chiếu sáng thông minh -->
               <fieldset class="rule-fieldset">
-                <legend class="fieldset-legend">03 / Chiếu sáng thông minh</legend>
+                <legend class="fieldset-legend">02 / Chiếu sáng thông minh</legend>
                 <div class="fields-row">
                   <div class="field-item">
                     <label for="rule-lightOn">Bật đèn khi ánh sáng ≤ (%):</label>
@@ -738,7 +671,7 @@
 
               <!-- Nhóm 4: Cảnh báo độ ẩm -->
               <fieldset class="rule-fieldset">
-                <legend class="fieldset-legend">04 / Cảnh báo độ ẩm</legend>
+                <legend class="fieldset-legend">03 / Cảnh báo độ ẩm</legend>
                 <div class="fields-row single">
                   <div class="field-item">
                     <label for="rule-humidityAlert">Cảnh báo độ ẩm cao từ (%):</label>
@@ -787,13 +720,12 @@
                   <th scope="col">Thời Gian Ghi Nhận</th>
                   <th scope="col">Nhiệt Độ (°C)</th>
                   <th scope="col">Độ Ẩm (%)</th>
-                  <th scope="col">Khí Tương Đối</th>
                   <th scope="col">Ánh Sáng (%)</th>
                   <th scope="col">Chuyển Động PIR</th>
                 </tr>
               </thead>
               <tbody id="history-table-body">
-                <tr><td colspan="6" class="table-empty">Đang tải lịch sử môi trường từ máy chủ...</td></tr>
+                <tr><td colspan="5" class="table-empty">Đang tải lịch sử môi trường từ máy chủ...</td></tr>
               </tbody>
             </table>
           </div>
