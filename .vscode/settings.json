@@ -1,7 +1,38 @@
 {
-  "files.exclude": { "**/node_modules": true, "tools": true, "data": true, "logs": true },
-  "files.watcherExclude": { "**/node_modules/**": true, "**/tools/**": true, "**/data/**": true, "**/logs/**": true },
-  "search.exclude": { "**/node_modules": true, "tools": true, "data": true, "logs": true },
+  "files.exclude": {
+    "**/node_modules": true,
+    "tools": true,
+    "logs": true,
+    "**/tools": true,
+    "**/logs": true,
+    "**/backups": true,
+    "**/maintenance": true,
+    "**/CODE_DEPLOY_RENDER": true,
+    "**/.gradle": true,
+    "**/build": true,
+    "**/*.kicad_prl": true,
+    "**/*.kicad_sch-bak": true
+  },
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/tools/**": true,
+    "**/data/**": true,
+    "**/logs/**": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "tools": true,
+    "logs": true,
+    "**/tools": true,
+    "**/logs": true,
+    "**/backups": true,
+    "**/maintenance": true,
+    "**/CODE_DEPLOY_RENDER": true,
+    "**/.gradle": true,
+    "**/build": true,
+    "**/*.kicad_prl": true,
+    "**/*.kicad_sch-bak": true
+  },
   "editor.tabSize": 2,
   "files.encoding": "utf8"
 }

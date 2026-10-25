@@ -21,5 +21,11 @@ if(action==='stop'){
     const child=spawn(process.execPath,[path.join(root,'gateway-usb.mjs'),...process.argv.slice(3)],{cwd:root,detached:true,windowsHide:true,stdio:['ignore',out,err]});child.unref();
   }
   console.log('PHONG IOT: http://localhost:8765');
-  if(process.platform==='win32')spawn('rundll32.exe',['url.dll,FileProtocolHandler','http://localhost:8765'],{detached:true,windowsHide:true,stdio:'ignore'}).unref();
+  if(process.platform==='win32') {
+    try {
+      spawn('cmd.exe',['/c','start','http://localhost:8765'],{detached:true,windowsHide:true,stdio:'ignore'}).unref();
+    } catch {
+      spawn('rundll32.exe',['url.dll,FileProtocolHandler','http://localhost:8765'],{detached:true,windowsHide:true,stdio:'ignore'}).unref();
+    }
+  }
 }
