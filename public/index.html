@@ -358,12 +358,13 @@
               </div>
             </div>
             <div class="canvas-chart-wrap">
-              <canvas id="history-chart" class="history-canvas" role="img" aria-label="Biểu đồ tương tác thời gian thực"></canvas>
+              <canvas id="history-chart" class="history-canvas" role="img" aria-label="Biểu đồ nét mực: nhiệt độ, độ ẩm và ánh sáng theo thời gian, ngắt nét khi thiếu dữ liệu"></canvas>
             </div>
             <div class="chart-caption-row">
               <span class="muted">Trục trái: Độ ẩm, ánh sáng 0–100% &bull; Trục phải: Nhiệt độ 0–60°C</span>
               <span id="chart-sample-count" class="badge-neutral">0 bản ghi</span>
             </div>
+            <p class="chart-source-note">Nét xước: mẫu đã xác nhận là dữ liệu giả. Khoảng trống: thiếu dữ liệu. Lịch sử cũ chưa lưu cờ nguồn.</p>
           </article>
 
           <!-- Thẻ Buồng Điều Khiển Thiết Bị Chấp Hành -->
@@ -532,7 +533,7 @@
                 <span class="sensor-chip">USB Serial</span>
               </div>
               <p class="muted">
-                Cắm cáp USB nối ESP32 vào máy tính laptop, đóng Serial Monitor / gateway USB rồi nhập thông tin Wi-Fi. Mật khẩu được nạp trực tiếp vào ESP32 và không lưu vào cơ sở dữ liệu của máy chủ.
+                Cắm cáp USB nối ESP32 vào máy tính laptop, đóng Serial Monitor rồi nhập thông tin Wi-Fi. Máy chủ sẽ tự nhả gateway USB trước khi lưu. Mật khẩu được nạp trực tiếp vào ESP32 và không lưu vào cơ sở dữ liệu của máy chủ.
               </p>
 
               <form id="wifi-form" class="galaxy-form">
@@ -733,7 +734,7 @@
         <div class="bento-card panel-page">
           <div class="panel-header flex-between">
             <div>
-              <h2>Quỹ Đạo Dữ Liệu Lưu Trữ (SQLite WAL)</h2>
+              <h2>Dữ liệu lưu trữ</h2>
               <p class="muted">Truy xuất tối đa 1.000 mẫu gần nhất từ cơ sở dữ liệu trên máy chủ.</p>
             </div>
             <div class="panel-actions">

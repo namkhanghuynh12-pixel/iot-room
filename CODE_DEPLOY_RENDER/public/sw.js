@@ -1,4 +1,4 @@
-const CACHE = 'phong-iot-sumie-v2-vietnamese';
+const CACHE = 'phong-iot-sumie-v3-ink-chart';
 const ASSETS = ['/', '/app.js', '/ui-state.js', '/style.css', '/icon.svg', '/manifest.webmanifest', '/poster.jpg', '/bg-720.mp4', '/bg-2k.mp4'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS.filter(name=>!name.endsWith('.mp4')))).then(() => self.skipWaiting()));

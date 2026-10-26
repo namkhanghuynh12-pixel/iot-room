@@ -12,6 +12,7 @@ import { execFileSync } from 'node:child_process';
 import { defaults, validateSettings, validateTelemetry, nextOutputs } from './logic.mjs';
 import { startSimulator } from './simulator.mjs';
 import { FirmwareManager } from './firmware-manager.mjs';
+import { sendWifiConfiguration } from './provision-usb.mjs';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const dataDir = process.env.IOT_DATA_DIR || path.join(root, 'data'); fs.mkdirSync(dataDir, { recursive: true });
@@ -105,6 +106,7 @@ const firmware=new FirmwareManager({root,dataDir,secrets,onPrepare:selectUsbHard
 const mime = { '.html':'text/html; charset=utf-8', '.css':'text/css; charset=utf-8', '.js':'text/javascript; charset=utf-8', '.mp4':'video/mp4', '.jpg':'image/jpeg', '.svg':'image/svg+xml', '.webmanifest':'application/manifest+json' };
 const addresses = Object.entries(os.networkInterfaces()).sort(([a],[b])=>Number(/wi-fi|wlan/i.test(b))-Number(/wi-fi|wlan/i.test(a))).flatMap(([,values])=>values).filter(x=>x?.family==='IPv4' && !x.internal).map(x=>x.address);
 const allowedHosts = new Set([`localhost:${port}`, `127.0.0.1:${port}`, ...addresses.map(x=>`${x}:${port}`)]);
+let usbProvisionBusy=false;
 function json(res, body, status = 200) { res.writeHead(status, { 'Content-Type':'application/json; charset=utf-8', 'Cache-Control':'no-store' }); res.end(JSON.stringify(body)); }
 async function body(req) { let b = ''; for await (const c of req) { b += c; if (b.length > 8192) throw Error('Yêu cầu quá lớn'); } return JSON.parse(b || '{}'); }
 const server = http.createServer(async (req,res) => {
@@ -115,6 +117,7 @@ const server = http.createServer(async (req,res) => {
   if (!isAllowedHost || !originValid) return json(res,{ error:'Địa chỉ truy cập không hợp lệ' },403);
   const url = new URL(req.url, `http://localhost:${port}`);
   try {
+    if(usbProvisionBusy&&req.method==='POST'&&['/api/provision','/api/firmware/flash','/api/settings','/api/shutdown'].includes(url.pathname))return json(res,{error:'Đang lưu cấu hình Wi-Fi qua USB. Đợi ESP32 xác nhận rồi thử lại.'},409);
     const local = ['127.0.0.1','::1','::ffff:127.0.0.1'].includes(req.socket.remoteAddress);
     const token = req.headers.authorization?.replace(/^Bearer /,'') || req.headers.cookie?.match(/(?:^|;\s*)iot_session=([a-f0-9]+)/)?.[1];
     if (req.method === 'POST' && url.pathname === '/api/login') { const p = await body(req); if (!equal(p.token,secrets.accessToken)) return json(res,{error:'Mã truy cập không đúng'},401); res.setHeader('Set-Cookie',`iot_session=${secrets.accessToken}; HttpOnly; SameSite=Strict; Path=/; Max-Age=86400`); return json(res,{ok:true}); }
@@ -135,18 +138,19 @@ const server = http.createServer(async (req,res) => {
       if(!local)return json(res,{error:'Chỉ cấu hình USB trên laptop máy chủ'},403);
       const p=await body(req);
       if(typeof p.ssid!=='string'||!p.ssid.length||Buffer.byteLength(p.ssid)>32||typeof p.password!=='string'||p.password.length>64||typeof p.broker!=='string'||!p.broker.length||p.broker.length>80||!/^COM\d+$/i.test(p.port)||!/^esp32-room-0[12]$/.test(p.deviceId))throw Error('Kiểm tra SSID, IP broker, COM và ID thiết bị');
+      usbProvisionBusy=true;
+      try{
+      const availablePorts=await SerialPort.list();
+      if(!availablePorts.some(item=>item.path.toUpperCase()===p.port.toUpperCase()))throw Error('Cổng COM không còn kết nối. Quét lại cổng trước khi lưu Wi-Fi.');
+      await firmware.releaseGateway(p.port,p.deviceId);
       const serial=new SerialPort({path:p.port,baudRate:115200,autoOpen:false});
       await new Promise((resolve,reject)=>serial.open(err=>err?reject(Error('Không mở được COM. Đóng Serial Monitor/gateway USB trước.')):resolve()));
       try{
-        await new Promise((resolve,reject)=>{
-          let buffer='';const timer=setTimeout(()=>reject(Error('ESP32 chưa xác nhận cấu hình; kiểm tra đúng firmware và cổng COM')),10000);
-          serial.on('error',()=>{clearTimeout(timer);reject(Error('Kết nối USB gián đoạn'));});
-          serial.on('data',chunk=>{buffer+=chunk.toString();if(buffer.length>16384)buffer='';let n;while((n=buffer.indexOf('\n'))>=0){const line=buffer.slice(0,n);buffer=buffer.slice(n+1);try{const a=JSON.parse(line);if(a.type==='provisionAck'){clearTimeout(timer);if(a.ok)resolve();else reject(Error('Board từ chối cấu hình'));}}catch{}}});
-          const frame={type:'provision',ssid:p.ssid,password:p.password,broker:p.broker,mqttPassword:secrets.hardware,deviceId:p.deviceId};
-          serial.write(JSON.stringify(frame)+'\n',err=>{if(err){clearTimeout(timer);reject(Error('Không gửi được cấu hình USB'));}});
-        });
+        const frame={type:'provision',ssid:p.ssid,password:p.password,broker:p.broker,mqttPassword:secrets.hardware,deviceId:p.deviceId};
+        await sendWifiConfiguration(serial,frame);
       }finally{if(serial.isOpen)await new Promise(resolve=>serial.close(resolve));}
       settings={...settings,source:'hardware',hardwareId:p.deviceId};saveSettings();simulator.configure({enabled:false});secondSimulator.configure({enabled:false});log('config','Đã gửi cấu hình Wi-Fi qua USB; chờ ESP32 kết nối');broadcast();return json(res,{ok:true,message:'ESP32 đã lưu cấu hình và đang kết nối Wi-Fi. Đợi khoảng 15 giây.'});
+      }finally{usbProvisionBusy=false;}
     }
     if (req.method === 'GET' && url.pathname === '/api/health') return json(res,{ok:true,app:'iot-room',port,mqttPort});
     if(req.method==='GET' && url.pathname==='/downloads/android.apk'){

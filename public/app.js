@@ -1,4 +1,4 @@
-import { matchesCommandAck, arcPath, shouldReduceVideo } from './ui-state.js';
+import { matchesCommandAck, arcPath, shouldReduceVideo, splitInkSegments } from './ui-state.js';
 /**
  * ============================================================================
  * TRẠM CHỈ HUY PHÒNG IOT - GALAXY SPACESHIP BRIDGE CONTROLLER
@@ -89,6 +89,7 @@ import { matchesCommandAck, arcPath, shouldReduceVideo } from './ui-state.js';
     eventSource: null,
     pollTimer: null,
     firmwareBusy: false,
+    provisionBusy: false,
     activeTab: 'dashboard',
     theme: localStorage.getItem('galaxy_theme') || 'dark',
     fxMode: localStorage.getItem('galaxy_fx') || 'full', // 'full' | 'reduced' | 'off'
@@ -189,6 +190,7 @@ import { matchesCommandAck, arcPath, shouldReduceVideo } from './ui-state.js';
     localStorage.setItem('galaxy_fx', mode);
     document.documentElement.dataset.fx = mode;
     syncBackgroundVideo();
+    window.chartEngine?.render();
 
     const label = $('fx-mode-label');
     const btn = $('fx-toggle');
@@ -340,256 +342,116 @@ import { matchesCommandAck, arcPath, shouldReduceVideo } from './ui-state.js';
   // 4. BIỂU ĐỒ QUỸ ĐẠO CANVAS 2 TRỤC TỰ VIẾT (DUAL-AXIS CANVAS CHART)
   // --------------------------------------------------------------------------
   class GalaxyChartEngine {
-    constructor(canvasId) {
-      this.canvas = $(canvasId);
-      if (!this.canvas) return;
-      this.ctx = this.canvas.getContext('2d');
-      this.dpr = Math.min(window.devicePixelRatio || 1, 2);
-      this.hoverIndex = -1;
-
-      this.seriesMeta = {
-        temperature: { label: 'Nhiệt độ', unit: '°C', color: '#ff7a45', axis: 'right', min: 0, max: 60 },
-        humidity: { label: 'Độ ẩm', unit: '%', color: '#00f5d4', axis: 'left', min: 0, max: 100 },
-        light: { label: 'Ánh sáng', unit: '%', color: '#ffd166', axis: 'left', min: 0, max: 100 }
-      };
-
-      this.bindEvents();
+    constructor(canvasId){
+      this.canvas=$(canvasId);if(!this.canvas)return;
+      this.ctx=this.canvas.getContext('2d');this.hoverIndex=-1;this.focusSeries=null;this.raf=0;this.lastAt=null;this.lastDevice=null;this.rippleAt=-Infinity;this.breakPending=false;
+      this.seriesMeta={temperature:{label:'Nhiệt độ',unit:'°C',color:'#d1495b',max:60},humidity:{label:'Độ ẩm',unit:'%',color:'#5fa8d3',max:100},light:{label:'Ánh sáng',unit:'%',color:'#d4a373',max:100}};
+      window.addEventListener('resize',()=>{this.resize();this.render();},{passive:true});
+      document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelAnimationFrame(this.raf);this.raf=0;this.rippleAt=-Infinity;}else this.render();});
+      this.observer=new ResizeObserver(()=>{this.resize();this.render();});this.observer.observe(this.canvas.parentElement);
+      this.canvas.addEventListener('pointermove',event=>this.handleHover(event.clientX-this.canvas.getBoundingClientRect().left),{passive:true});
+      this.canvas.addEventListener('pointerleave',()=>{this.hoverIndex=-1;this.render();});
+      document.querySelectorAll('.legend-chip[data-key]').forEach(button=>{
+        const focus=()=>{this.focusSeries=button.dataset.key;this.render();};
+        const clear=()=>{this.focusSeries=null;this.render();};
+        button.addEventListener('pointerenter',focus);button.addEventListener('pointerleave',clear);button.addEventListener('focus',focus);button.addEventListener('blur',clear);
+      });
       this.resize();
     }
-
-    bindEvents() {
-      window.addEventListener('resize', () => {
-        this.resize();
-        this.render();
-      }, { passive: true });
-
-      // Tương tác hover rê chuột trên biểu đồ
-      this.canvas.addEventListener('mousemove', e => {
-        const rect = this.canvas.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        this.handleHover(mouseX);
-      }, { passive: true });
-
-      this.canvas.addEventListener('mouseleave', () => {
-        this.hoverIndex = -1;
-        this.render();
-      }, { passive: true });
+    resize(){
+      const rect=this.canvas.parentElement.getBoundingClientRect();if(!rect.width)return;
+      this.width=rect.width;this.height=Math.max(220,rect.height||260);this.dpr=Math.min(window.devicePixelRatio||1,3);
+      this.canvas.width=Math.round(this.width*this.dpr);this.canvas.height=Math.round(this.height*this.dpr);
+      this.ctx.setTransform(this.dpr,0,0,this.dpr,0,0);
     }
-
-    resize() {
-      if (!this.canvas) return;
-      const rect = this.canvas.parentElement.getBoundingClientRect();
-      const w = Math.max(rect.width, 320);
-      const h = Math.max(rect.height || 260, 240);
-
-      this.width = w;
-      this.height = h;
-      this.canvas.width = Math.floor(w * this.dpr);
-      this.canvas.height = Math.floor(h * this.dpr);
-      this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    handleHover(mouseX){
+      if(!this.data?.length)return;
+      const time=this.firstTime+clamp((mouseX-this.left)/this.plotW,0,1)*this.timeSpan;
+      let best=-1,distance=Infinity;
+      this.data.forEach((row,index)=>{const delta=Math.abs(Date.parse(row.at)-time);if(delta<distance){distance=delta;best=index;}});
+      if(best!==this.hoverIndex){this.hoverIndex=best;this.render();}
     }
-
-    handleHover(mouseX) {
-      const data = appState.historyData.slice(-100);
-      if (!data || data.length < 2) return;
-
-      const padLeft = 44;
-      const padRight = 44;
-      const plotWidth = this.width - padLeft - padRight;
-      const ratio = clamp((mouseX - padLeft) / plotWidth, 0, 1);
-      const idx = Math.round(ratio * (data.length - 1));
-
-      if (idx !== this.hoverIndex && idx >= 0 && idx < data.length) {
-        this.hoverIndex = idx;
-        this.render();
+    // Bounded Catmull-Rom controls: soft curves without inventing extrema.
+    trace(points){
+      const ctx=this.ctx;ctx.beginPath();ctx.moveTo(points[0].x,points[0].y);
+      for(let i=0;i<points.length-1;i++){
+        const a=points[Math.max(0,i-1)],b=points[i],c=points[i+1],d=points[Math.min(points.length-1,i+2)];
+        const lo=Math.min(b.y,c.y),hi=Math.max(b.y,c.y);
+        ctx.bezierCurveTo(clamp(b.x+(c.x-a.x)/6,b.x,c.x),clamp(b.y+(c.y-a.y)/6,lo,hi),clamp(c.x-(d.x-b.x)/6,b.x,c.x),clamp(c.y-(d.y-b.y)/6,lo,hi),c.x,c.y);
       }
     }
-
-    render() {
-      if (!this.canvas || !this.ctx) return;
-      const ctx = this.ctx;
-      const w = this.width;
-      const h = this.height;
-      const padLeft = 48;
-      const padRight = 48;
-      const padTop = 24;
-      const padBottom = 34;
-
-      ctx.clearRect(0, 0, w, h);
-
-      const plotW = w - padLeft - padRight;
-      const plotH = h - padTop - padBottom;
-
-      // 1. Vẽ các đường lưới tọa độ ngang (5 vạch)
-      const isDark = appState.theme === 'dark';
-      const gridColor = isDark ? 'rgba(255, 255, 255, 0.07)' : 'rgba(0, 0, 0, 0.08)';
-      const palette = getComputedStyle(document.documentElement);
-      const textColor = palette.getPropertyValue('--gx-text-secondary').trim();
-      this.seriesMeta.temperature.color = palette.getPropertyValue('--gx-metric-temp').trim();
-      this.seriesMeta.humidity.color = palette.getPropertyValue('--gx-metric-hum').trim();
-      this.seriesMeta.light.color = palette.getPropertyValue('--gx-metric-light').trim();
-
-      ctx.lineWidth = 1;
-      ctx.font = '10px monospace';
-      ctx.textBaseline = 'middle';
-
-      for (let i = 0; i <= 4; i++) {
-        const y = padTop + (plotH / 4) * i;
-        ctx.strokeStyle = gridColor;
-        ctx.beginPath();
-        ctx.moveTo(padLeft, y);
-        ctx.lineTo(w - padRight, y);
-        ctx.stroke();
-
-        // Nhãn trục trái: 0 - 100%
-        const leftVal = Math.round(100 - (100 / 4) * i);
-        ctx.fillStyle = textColor;
-        ctx.textAlign = 'right';
-        ctx.fillText(`${leftVal}%`, padLeft - 6, y);
-
-        // Nhãn trục phải: 0 - 60°C
-        const rightVal = Math.round(60 - (60 / 4) * i);
-        ctx.textAlign = 'left';
-        ctx.fillText(`${rightVal}°C`, w - padRight + 6, y);
-      }
-
-      const data = appState.historyData.slice(-100);
-      if (!data || data.length === 0) {
-        ctx.fillStyle = textColor;
-        ctx.textAlign = 'center';
-        ctx.font = '13px sans-serif';
-        ctx.fillText('Đang chờ dữ liệu lịch sử từ cơ sở dữ liệu SQLite...', w / 2, h / 2);
-        return;
-      }
-
-      // Cập nhật số mẫu hiển thị
-      const countEl = $('chart-sample-count');
-      if (countEl) countEl.textContent = `${data.length} bản ghi`;
-
-      // 2. Vẽ 4 đường quỹ đạo cảm biến
-      const getX = index => padLeft + (index / Math.max(1, data.length - 1)) * plotW;
-      const getY = (val, axis) => {
-        if (val == null || isNaN(val)) return null;
-        const max = axis === 'right' ? 60 : 100;
-        const norm = clamp(val / max, 0, 1);
-        return padTop + plotH * (1 - norm);
-      };
-
-      for (const [key, meta] of Object.entries(this.seriesMeta)) {
-        if (!appState.activeSeries[key]) continue;
-
-        ctx.strokeStyle = meta.color;
-        ctx.lineWidth = 2.2;
-        ctx.lineJoin = 'round';
-        ctx.lineCap = 'round';
-
-        let pathOpen = false;
-        let lastTimeMs = null;
-
-        ctx.beginPath();
-        for (let i = 0; i < data.length; i++) {
-          const pt = data[i];
-          const val = pt[key];
-          const curTimeMs = pt.at ? Date.parse(pt.at) : null;
-          const y = getY(val, meta.axis);
-
-          if (y === null) {
-            pathOpen = false;
-            continue;
-          }
-
-          // Kiểm tra ngắt dòng nếu khoảng trống thời gian > 30 giây (30000ms)
-          if (lastTimeMs !== null && curTimeMs !== null && (curTimeMs - lastTimeMs > 30000)) {
-            pathOpen = false;
-          }
-          lastTimeMs = curTimeMs;
-
-          const x = getX(i);
-          if (!pathOpen) {
-            ctx.moveTo(x, y);
-            pathOpen = true;
-          } else {
-            ctx.lineTo(x, y);
-          }
+    droplet(point,color,opacity){
+      const ctx=this.ctx;ctx.save();ctx.globalAlpha=opacity;
+      const wash=ctx.createRadialGradient(point.x,point.y,0,point.x,point.y,7);wash.addColorStop(0,color);wash.addColorStop(.3,color+'aa');wash.addColorStop(1,color+'00');
+      ctx.fillStyle=wash;ctx.beginPath();ctx.ellipse(point.x,point.y,7,5.4,-.3,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=color;ctx.beginPath();ctx.ellipse(point.x,point.y,2.5,1.8,.3,0,Math.PI*2);ctx.fill();ctx.restore();
+    }
+    brush(points,meta,synthetic,opacity,fx){
+      const ctx=this.ctx;if(!points.length)return;
+      ctx.save();ctx.lineJoin='round';ctx.lineCap='round';ctx.strokeStyle=meta.color;
+      if(points.length>1){
+        if(fx!=='off'){
+          this.trace(points);ctx.lineTo(points.at(-1).x,this.bottom);ctx.lineTo(points[0].x,this.bottom);ctx.closePath();
+          const area=ctx.createLinearGradient(0,Math.min(...points.map(p=>p.y)),0,this.bottom);area.addColorStop(0,meta.color+'1a');area.addColorStop(1,meta.color+'00');ctx.fillStyle=area;ctx.globalAlpha=opacity;ctx.fill();
+          this.trace(points);ctx.globalAlpha=.18*opacity;ctx.lineWidth=7;ctx.setLineDash(synthetic?[7,6]:[]);
+          ctx.shadowColor=meta.color;ctx.shadowBlur=fx==='full'?10:0;ctx.stroke();
         }
-        ctx.stroke();
-
-        // Đánh dấu các mẫu là dữ liệu giả (synthetic === true)
-        for (let i = 0; i < data.length; i += 5) {
-          if (data[i].synthetic) {
-            const y = getY(data[i][key], meta.axis);
-            if (y !== null) {
-              ctx.fillStyle = meta.color;
-              ctx.beginPath();
-              ctx.arc(getX(i), y, 1.8, 0, Math.PI * 2);
-              ctx.fill();
-            }
-          }
+        this.trace(points);ctx.shadowBlur=0;ctx.globalAlpha=.82*opacity;ctx.lineWidth=fx==='off'?2:3;ctx.setLineDash(synthetic?[6,5]:[]);ctx.stroke();
+        if(fx==='full'){
+          this.trace(points);ctx.globalAlpha=.7*opacity;ctx.lineWidth=1;ctx.setLineDash(synthetic?[1,5,3,4]:[1,2,6,1,2,3]);ctx.lineDashOffset=2;ctx.stroke();
         }
       }
-
-      // 3. Đường Crosshair và Tooltip khi Hover
-      if (this.hoverIndex >= 0 && this.hoverIndex < data.length) {
-        const hItem = data[this.hoverIndex];
-        const hX = getX(this.hoverIndex);
-
-        // Vẽ vạch dọc
-        ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.35)' : 'rgba(0, 0, 0, 0.3)';
-        ctx.setLineDash([4, 4]);
-        ctx.beginPath();
-        ctx.moveTo(hX, padTop);
-        ctx.lineTo(hX, padTop + plotH);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        // Vẽ điểm tròn trên các series đang bật
-        for (const [key, meta] of Object.entries(this.seriesMeta)) {
-          if (!appState.activeSeries[key]) continue;
-          const y = getY(hItem[key], meta.axis);
-          if (y !== null) {
-            ctx.fillStyle = meta.color;
-            ctx.beginPath();
-            ctx.arc(hX, y, 4, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.strokeStyle = isDark ? '#05060f' : '#ffffff';
-            ctx.lineWidth = 1.5;
-            ctx.stroke();
-          }
-        }
-
-        // Vẽ hộp Tooltip nổi
-        const timeLabel = formatLocalTime(hItem.at);
-        const tipW = 160;
-        const tipH = 92;
-        let tipX = hX + 12;
-        if (tipX + tipW > w - padRight) tipX = hX - tipW - 12;
-        const tipY = padTop + 8;
-
-        ctx.fillStyle = isDark ? 'rgba(10, 14, 30, 0.92)' : 'rgba(255, 255, 255, 0.95)';
-        ctx.strokeStyle = isDark ? 'rgba(179, 136, 255, 0.4)' : 'rgba(100, 116, 139, 0.3)';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.roundRect(tipX, tipY, tipW, tipH, 8);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.font = 'bold 11px sans-serif';
-        ctx.fillStyle = isDark ? '#ffffff' : '#05060f';
-        ctx.textAlign = 'left';
-        ctx.fillText(`Thời gian: ${timeLabel}`, tipX + 8, tipY + 16);
-
-        ctx.font = '10px monospace';
-        let lineY = tipY + 32;
-        for (const [key, meta] of Object.entries(this.seriesMeta)) {
-          if (!appState.activeSeries[key]) continue;
-          const val = hItem[key] != null ? `${Number(hItem[key]).toFixed(1)} ${meta.unit}` : '--';
-          ctx.fillStyle = meta.color;
-          ctx.fillText(`${meta.label}: ${val}`, tipX + 8, lineY);
-          lineY += 14;
+      ctx.restore();
+    }
+    render(){
+      cancelAnimationFrame(this.raf);this.raf=0;
+      if(document.hidden||appState.activeTab!=='dashboard'||!this.ctx||!this.width)return;
+      const ctx=this.ctx,w=this.width,h=this.height,fx=appState.fxMode;
+      ctx.clearRect(0,0,w,h);ctx.save();
+      this.left=w<430?38:46;this.right=w<430?39:46;this.top=22;this.bottom=h-34;this.plotW=w-this.left-this.right;const plotH=this.bottom-this.top;
+      const isDark=appState.theme==='dark',style=getComputedStyle(document.documentElement),text=style.getPropertyValue('--gx-text-secondary').trim();
+      this.seriesMeta.temperature.color=isDark?'#d87981':'#b8394a';this.seriesMeta.humidity.color=isDark?'#83acc2':'#386a86';this.seriesMeta.light.color=isDark?'#d4ad73':'#946124';
+      ctx.font='11px "Times New Roman",serif';ctx.textBaseline='middle';ctx.lineWidth=1;
+      for(let i=0;i<=4;i++){
+        const y=this.top+plotH*i/4;ctx.strokeStyle=isDark?'rgba(255,255,255,.08)':'rgba(45,34,38,.12)';ctx.setLineDash([2,6]);ctx.beginPath();ctx.moveTo(this.left,y);ctx.lineTo(w-this.right,y);ctx.stroke();
+        ctx.fillStyle=text;ctx.textAlign='right';ctx.fillText(`${100-i*25}%`,this.left-6,y);ctx.textAlign='left';ctx.fillText(`${60-i*15}°C`,w-this.right+5,y);
+      }
+      ctx.setLineDash([]);
+      this.data=appState.historyData.slice(-100).filter(row=>Number.isFinite(Date.parse(row.at)));
+      const data=this.data,count=$('chart-sample-count');if(count)count.textContent=`${data.length} bản ghi`;
+      if(!data.length){ctx.fillStyle=text;ctx.textAlign='center';ctx.font='12px system-ui';ctx.fillText('Chưa có dữ liệu lịch sử',w/2,h/2);ctx.restore();return;}
+      const times=data.map(row=>Date.parse(row.at));this.firstTime=Math.min(...times);const lastTime=Math.max(...times);this.timeSpan=Math.max(lastTime-this.firstTime,1000);
+      const getX=time=>this.left+(time-this.firstTime)/this.timeSpan*this.plotW;
+      const getY=(value,meta)=>this.top+(1-clamp(value/meta.max,0,1))*plotH;
+      const identity=appState.snapshot?.device?.id,latest=data.at(-1),now=performance.now();
+      if(identity===this.lastDevice&&this.lastAt&&Date.parse(latest.at)>Date.parse(this.lastAt))this.rippleAt=now;
+      if(identity!==this.lastDevice)this.rippleAt=-Infinity;
+      this.lastAt=latest.at;this.lastDevice=identity;
+      ctx.save();ctx.beginPath();ctx.rect(this.left-9,this.top-10,this.plotW+18,plotH+20);ctx.clip();
+      for(const [key,meta] of Object.entries(this.seriesMeta)){
+        if(!appState.activeSeries[key])continue;
+        const opacity=this.focusSeries&&this.focusSeries!==key? .18:1;
+        const segments=splitInkSegments(data,key);
+        for(const segment of segments){const points=segment.map(p=>({x:getX(p.time),y:getY(p.value,meta)}));this.brush(points,meta,segment[0].synthetic===true,opacity,fx);}
+        const value=latest[key];
+        if(typeof value==='number'&&Number.isFinite(value)){
+          const tip={x:getX(Date.parse(latest.at)),y:getY(value,meta)};this.droplet(tip,meta.color,opacity);
+          const progress=(now-this.rippleAt)/1000;
+          if(fx==='full'&&progress>=0&&progress<1){ctx.save();ctx.globalAlpha=(1-progress)*.28*opacity;ctx.strokeStyle=meta.color;ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(tip.x,tip.y,3+progress*12,2+progress*8,-.2,0,Math.PI*2);ctx.stroke();ctx.restore();}
         }
       }
+      ctx.restore();ctx.fillStyle=text;ctx.font='11px "Times New Roman",serif';ctx.textAlign='left';ctx.fillText(formatLocalTime(data[0].at),this.left,h-13);ctx.textAlign='right';ctx.fillText(formatLocalTime(latest.at),w-this.right,h-13);
+      if(this.hoverIndex>=0&&this.hoverIndex<data.length){
+        const row=data[this.hoverIndex],x=getX(Date.parse(row.at));ctx.strokeStyle=isDark?'#dfcbd944':'#44334444';ctx.setLineDash([2,6]);ctx.beginPath();ctx.moveTo(x,this.top);ctx.lineTo(x,this.bottom);ctx.stroke();ctx.setLineDash([]);
+        const lines=[`Lúc ${formatLocalTime(row.at)}`,...Object.entries(this.seriesMeta).filter(([key])=>appState.activeSeries[key]).map(([key,meta])=>`${meta.label}: ${typeof row[key]==='number'?Number(row[key]).toFixed(1):'—'} ${meta.unit}`),row.synthetic===true?'Dữ liệu giả':row.synthetic===false?'Thiết bị gửi dữ liệu thật':'Lịch sử chưa lưu cờ nguồn'];
+        const tipW=Math.min(210,this.plotW),tipH=lines.length*17+16,tipX=clamp(x+10,this.left,w-this.right-tipW),tipY=this.top+7;
+        ctx.fillStyle=isDark?'#211827f5':'#fbf1dff5';ctx.beginPath();ctx.roundRect(tipX,tipY,tipW,tipH,10);ctx.fill();ctx.fillStyle=text;ctx.font='11px system-ui';ctx.textAlign='left';lines.forEach((line,i)=>ctx.fillText(line,tipX+9,tipY+15+i*17,tipW-18));
+      }
+      ctx.restore();
+      if(fx==='full'&&now-this.rippleAt<1000)this.raf=requestAnimationFrame(()=>this.render());
     }
   }
+
 
   // --------------------------------------------------------------------------
   // 5. BỘ ĐIỀU KHIỂN THIẾT BỊ CHẤP HÀNH & MÁY TRẠNG THÁI ACK (ACTUATORS & ACK)
@@ -735,6 +597,7 @@ import { matchesCommandAck, arcPath, shouldReduceVideo } from './ui-state.js';
   function renderSnapshot(snap) {
     if (!snap) return;
     const oldDevice = appState.snapshot?.device?.id;
+    if(appState.snapshot?.device?.online && !snap.device?.online && window.chartEngine)window.chartEngine.breakPending=true;
     appState.snapshot = snap;
     if (oldDevice && oldDevice !== snap.device?.id) {
       appState.historyData = []; appState.historyPage = 1;
@@ -1090,7 +953,11 @@ import { matchesCommandAck, arcPath, shouldReduceVideo } from './ui-state.js';
       const history = await api('/api/history');
       if (request !== historyRequest || deviceId !== appState.snapshot?.device?.id) return;
       if (Array.isArray(history)) {
-        appState.historyData = history;
+        const known=new Map(appState.historyData.map(row=>[row.at,row]));
+        appState.historyData = history.map(row=>{
+          const live=known.get(row.at);
+          return live?{...row,synthetic:live.synthetic,breakBefore:live.breakBefore}:row;
+        });
         if (window.chartEngine) window.chartEngine.render();
         renderHistoryTable();
       }
@@ -1193,7 +1060,8 @@ import { matchesCommandAck, arcPath, shouldReduceVideo } from './ui-state.js';
             humidity: snap.device.humidity,
             light: snap.device.light,
             motion: snap.device.motion,
-            synthetic: Boolean(snap.device.synthetic),
+            synthetic: snap.settings.source === 'simulation' || snap.device.synthetic === true,
+            breakBefore: Boolean(window.chartEngine?.breakPending),
             at: snap.device.at
           };
 
@@ -1201,6 +1069,7 @@ import { matchesCommandAck, arcPath, shouldReduceVideo } from './ui-state.js';
           const last = appState.historyData[appState.historyData.length - 1];
           if (!last || last.at !== pt.at) {
             appState.historyData.push(pt);
+            if(window.chartEngine)window.chartEngine.breakPending=false;
             if (appState.historyData.length > 1000) appState.historyData.shift();
             if (window.chartEngine) window.chartEngine.render();
           }
@@ -1461,6 +1330,8 @@ import { matchesCommandAck, arcPath, shouldReduceVideo } from './ui-state.js';
     if (wifiForm) {
       wifiForm.addEventListener('submit', async e => {
         e.preventDefault();
+        if(appState.provisionBusy||appState.firmwareBusy)return;
+        appState.provisionBusy=true;
         const submitBtn = $('wifi-submit');
         const resultEl = $('wifi-result');
         if (submitBtn) submitBtn.disabled = true;
@@ -1481,7 +1352,8 @@ import { matchesCommandAck, arcPath, shouldReduceVideo } from './ui-state.js';
           if (resultEl) resultEl.textContent = `Lỗi: ${err.message}`;
           toast(`Lỗi cấu hình USB: ${err.message}`);
         } finally {
-          if (submitBtn) submitBtn.disabled = false;
+          appState.provisionBusy=false;
+          if (submitBtn) submitBtn.disabled = appState.firmwareBusy;
         }
       });
     }
@@ -1537,7 +1409,7 @@ import { matchesCommandAck, arcPath, shouldReduceVideo } from './ui-state.js';
     const progress=$('firmware-progress');if(progress){const backupProgress=job?.phase==='backup'&&job.backupTotalBytes;progress.hidden=!backupProgress&&(job?.phase!=='upload'||job.uploadPercent==null);progress.value=backupProgress?job.backupBytes/job.backupTotalBytes*100:job?.uploadPercent||0;progress.setAttribute('aria-label',backupProgress?'Tiến trình sao lưu Flash':'Tiến trình ghi Flash');}
     if($('firmware-log'))$('firmware-log').textContent=job?.logs?.join('\n')||'Chưa có nhật ký.';
     if(appState.snapshot)renderSnapshot(appState.snapshot);
-    for(const id of ['source-sim','source-hw','device-select','control-mode','wifi-submit'])if($(id))$(id).disabled=appState.firmwareBusy;
+    for(const id of ['source-sim','source-hw','device-select','control-mode','wifi-submit'])if($(id))$(id).disabled=appState.firmwareBusy||appState.provisionBusy;
   }
   async function loadFirmwareStatus(){
     try{renderFirmware(await api('/api/firmware/status'));}catch(error){if(!firmwareUI.loaded&&$('firmware-capability'))$('firmware-capability').textContent='Không đọc được trạng thái công cụ nạp. Kiểm tra máy chủ local.';}

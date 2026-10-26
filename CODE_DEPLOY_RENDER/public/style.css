@@ -2028,3 +2028,15 @@ body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif}.ink-definitions{
 .panel-header h2{display:block;position:relative;padding-left:18px;font-family:"Times New Roman","Segoe UI",serif;font-weight:600;line-height:1.35;letter-spacing:normal;font-kerning:normal;overflow:visible}
 .panel-header h2::before{position:absolute;left:0;top:.28em;width:3px;height:.65em}
 .panel-header h2{font-family:system-ui,-apple-system,'Segoe UI',Arial,sans-serif!important;font-size:24px;font-weight:650;letter-spacing:normal!important;display:block!important;line-height:1.4}
+/* Mineral ink chart palette and brush-stroke legend. */
+.legend-chip .legend-color{width:18px;height:5px;border-radius:60% 25% 55% 20%;transform:rotate(-8deg);box-shadow:none;flex-shrink:0}
+.legend-temp .legend-color{background:#d87981}.legend-hum .legend-color{background:#83acc2}.legend-light .legend-color{background:#d4ad73}
+:root[data-theme="light"] .legend-temp .legend-color{background:#b8394a}:root[data-theme="light"] .legend-hum .legend-color{background:#386a86}:root[data-theme="light"] .legend-light .legend-color{background:#946124}
+.chart-source-note{font-size:10px;line-height:1.65;color:var(--gx-text-secondary);margin-top:10px}.history-canvas{touch-action:pan-y}.legend-chip:focus-visible{outline-offset:3px}/* Distinct mineral ink for each sensor gauge. */
+#card-temp .galaxy-gauge{color:#de8590}
+#card-hum .galaxy-gauge{color:#83b7d4}
+#card-light .galaxy-gauge{color:#ddbb7d}
+:root[data-theme="light"] #card-temp .galaxy-gauge{color:#ad354b}
+:root[data-theme="light"] #card-hum .galaxy-gauge{color:#356b88}
+:root[data-theme="light"] #card-light .galaxy-gauge{color:#946124}
+#card-temp.danger-pulse .galaxy-gauge,#card-hum.danger-pulse .galaxy-gauge{color:var(--gx-status-danger)}
