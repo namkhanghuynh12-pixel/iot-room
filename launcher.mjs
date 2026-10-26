@@ -4,10 +4,11 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 const root=path.dirname(fileURLToPath(import.meta.url));
 fs.mkdirSync(path.join(root,'logs'),{recursive:true});
-async function health(){try{return await (await fetch('http://localhost:8765/api/health',{signal:AbortSignal.timeout(1500)})).json();}catch{return null;}}
+const port=Number(process.env.PORT||process.env.IOT_HTTP_PORT||3500);
+async function health(){try{return await (await fetch(`http://localhost:${port}/api/health`,{signal:AbortSignal.timeout(1500)})).json();}catch{return null;}}
 const action=process.argv[2]||'start';
 if(action==='stop'){
-  const p=await health();if(p?.app==='iot-room'){await fetch('http://localhost:8765/api/shutdown',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});console.log('Da dung Phong IoT. Dau ra ESP32 se dung sau thoi han lenh.');}
+  const p=await health();if(p?.app==='iot-room'){await fetch(`http://localhost:${port}/api/shutdown`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});console.log('Da dung Phong IoT. Dau ra ESP32 se dung sau thoi han lenh.');}
 }else{
   if(!(await health())){
     const out=fs.openSync(path.join(root,'logs','server.log'),'a');
@@ -20,12 +21,12 @@ if(action==='stop'){
     const out=fs.openSync(path.join(root,'logs','gateway.log'),'a'),err=fs.openSync(path.join(root,'logs','gateway-error.log'),'a');
     const child=spawn(process.execPath,[path.join(root,'gateway-usb.mjs'),...process.argv.slice(3)],{cwd:root,detached:true,windowsHide:true,stdio:['ignore',out,err]});child.unref();
   }
-  console.log('PHONG IOT: http://localhost:8765');
+  console.log(`PHONG IOT: http://localhost:${port}`);
   if(process.platform==='win32') {
     try {
-      spawn('cmd.exe',['/c','start','http://localhost:8765'],{detached:true,windowsHide:true,stdio:'ignore'}).unref();
+      spawn('cmd.exe',['/c','start',`http://localhost:${port}`],{detached:true,windowsHide:true,stdio:'ignore'}).unref();
     } catch {
-      spawn('rundll32.exe',['url.dll,FileProtocolHandler','http://localhost:8765'],{detached:true,windowsHide:true,stdio:'ignore'}).unref();
+      spawn('rundll32.exe',['url.dll,FileProtocolHandler',`http://localhost:${port}`],{detached:true,windowsHide:true,stdio:'ignore'}).unref();
     }
   }
 }
